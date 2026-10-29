@@ -180,6 +180,7 @@ const FILMS = [
   {"title": "The Wonderful Story of Henry Sugar", "year": 2023, "directors": ["Wes Anderson"], "slug": "the-wonderful-story-of-henry-sugar", "poster": "https://upload.wikimedia.org/wikipedia/en/5/5d/Henry_Sugar_poster.webp", "w": 259, "h": 384, "wiki": "The Wonderful Story of Henry Sugar (film)"},
   {"title": "Monster", "year": 2023, "directors": ["Hirokazu Kore-eda"], "slug": "monster-2023", "original": "怪物", "poster": "https://upload.wikimedia.org/wikipedia/en/a/a3/Monster_2023_film_poster.png", "w": 267, "h": 371, "wiki": "Monster (2023 Japanese film)"},
   {"title": "Past Lives", "year": 2023, "directors": ["Celine Song"], "slug": "past-lives", "poster": "https://upload.wikimedia.org/wikipedia/en/d/da/Past_Lives_film_poster.png", "w": 255, "h": 378, "wiki": "Past Lives (film)"},
+  {"title": "Poor Things", "year": 2023, "directors": ["Yorgos Lanthimos"], "slug": "poor-things-2023", "poster": "https://upload.wikimedia.org/wikipedia/en/f/f3/Poor_Things_poster.jpg", "w": 220, "h": 326, "wiki": "Poor Things (film)"},
   {"title": "Broker", "year": 2022, "directors": ["Hirokazu Kore-eda"], "slug": "broker-2022", "original": "브로커", "poster": "https://upload.wikimedia.org/wikipedia/en/4/41/Broker_%282022_film%29.jpg", "w": 264, "h": 377, "wiki": "Broker (2022 film)"},
   {"title": "Decision to Leave", "year": 2022, "directors": ["Park Chan-wook"], "slug": "decision-to-leave", "original": "헤어질 결심", "poster": "https://upload.wikimedia.org/wikipedia/en/8/82/Decision_to_Leave_film_poster.jpg", "w": 250, "h": 360, "wiki": "Decision to Leave"},
   {"title": "Triangle of Sadness", "year": 2022, "directors": ["Ruben Östlund"], "slug": "triangle-of-sadness", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2d/TriangleOfSadness2022Poster.jpg", "w": 258, "h": 387, "wiki": "Triangle of Sadness"},
@@ -190,6 +191,7 @@ const FILMS = [
   {"title": "Shoplifters", "year": 2018, "directors": ["Hirokazu Kore-eda"], "slug": "shoplifters", "original": "万引き家族", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c9/Shoplifters_%28film%29.jpg", "w": 220, "h": 311, "wiki": "Shoplifters (film)"},
   {"title": "Isle of Dogs", "year": 2018, "directors": ["Wes Anderson"], "slug": "isle-of-dogs-2018", "poster": "https://upload.wikimedia.org/wikipedia/en/2/23/IsleOfDogsFirstLook.jpg", "w": 220, "h": 344, "wiki": "Isle of Dogs (film)"},
   {"title": "Sorry to Bother You", "year": 2018, "directors": ["Boots Riley"], "slug": "sorry-to-bother-you", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c7/Sorry_to_Bother_You.png", "w": 220, "h": 327, "wiki": "Sorry to Bother You"},
+  {"title": "The Favourite", "year": 2018, "directors": ["Yorgos Lanthimos"], "slug": "the-favourite", "poster": "https://upload.wikimedia.org/wikipedia/en/c/ce/The_Favourite_poster.png", "w": 220, "h": 326, "wiki": "The Favourite"},
   {"title": "La La Land", "year": 2016, "directors": ["Damien Chazelle"], "slug": "la-la-land", "poster": "https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.png", "w": 260, "h": 385, "wiki": "La La Land"},
   {"title": "After the Storm", "year": 2016, "directors": ["Hirokazu Kore-eda"], "slug": "after-the-storm-2016", "original": "海よりもまだ深く", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c1/After_the_Storm_2016.jpg", "w": 220, "h": 326, "wiki": "After the Storm (2016 film)"},
   {"title": "The Handmaiden", "year": 2016, "directors": ["Park Chan-wook"], "slug": "the-handmaiden", "original": "아가씨", "poster": "https://upload.wikimedia.org/wikipedia/en/a/a2/The_Handmaiden_film.png", "w": 264, "h": 377, "wiki": "The Handmaiden"},
@@ -380,7 +382,7 @@ document.addEventListener("error", async event => {
     img.dataset.retried = "1";
     try {
       const api = "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*" +
-        "&prop=pageimages&piprop=thumbnail&pithumbsize=500&pilicense=any&titles=" + encodeURIComponent(f.wiki);
+        "&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=500&pilicense=any&titles=" + encodeURIComponent(f.wiki);
       const page = (await (await fetch(api)).json()).query.pages[0];
       if (page.thumbnail && page.thumbnail.source !== img.src) {
         img.src = page.thumbnail.source;
