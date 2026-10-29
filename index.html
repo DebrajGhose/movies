@@ -160,6 +160,7 @@
       <div class="toggle" role="group" aria-label="Section">
         <button type="button" data-section="movies" aria-pressed="true">Movies</button>
         <button type="button" data-section="books" aria-pressed="false">Books</button>
+        <button type="button" data-section="all" aria-pressed="false">All</button>
       </div>
       <div class="group">
         <span id="group-label">Group by</span>
@@ -285,7 +286,13 @@ const FILMS = [
 const BOOKS = [
   {"title": "Project Hail Mary", "year": 2021, "authors": ["Andy Weir"], "slug": "project-hail-mary", "poster": "https://upload.wikimedia.org/wikipedia/en/a/ad/Project_Hail_Mary%2C_First_Edition_Cover_%282021%29.jpg", "w": 257, "h": 388, "wiki": "Project Hail Mary"},
   {"title": "A Dance with Dragons", "year": 2011, "authors": ["George R. R. Martin"], "slug": "a-dance-with-dragons", "series": "A Song of Ice and Fire, book 5", "poster": "https://upload.wikimedia.org/wikipedia/en/5/5d/A_Dance_With_Dragons_US.jpg", "w": 262, "h": 388, "wiki": "A Dance with Dragons"},
+  {"title": "Death's End", "year": 2010, "authors": ["Liu Cixin"], "slug": "deaths-end", "series": "Remembrance of Earth's Past, book 3", "poster": "https://upload.wikimedia.org/wikipedia/en/6/62/Death%27s_End_-_bookcover.jpg", "w": 257, "h": 386, "wiki": "Death's End"},
   {"title": "1Q84", "year": 2009, "authors": ["Haruki Murakami"], "slug": "1q84", "poster": "https://upload.wikimedia.org/wikipedia/en/8/8e/1Q84bookcover.png", "w": 263, "h": 379, "wiki": "1Q84"},
+  {"title": "The Greatest Show on Earth", "year": 2009, "authors": ["Richard Dawkins"], "slug": "the-greatest-show-on-earth", "poster": "https://upload.wikimedia.org/wikipedia/en/e/ed/The_Greatest_Show_on_Earth_The_Evidence_for_Evolution.jpg", "w": 245, "h": 401, "wiki": "The Greatest Show on Earth: The Evidence for Evolution"},
+  {"title": "The Dark Forest", "year": 2008, "authors": ["Liu Cixin"], "slug": "the-dark-forest", "series": "Remembrance of Earth's Past, book 2", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2c/TheDarkForestNovelCover.jpg", "w": 259, "h": 385, "wiki": "The Dark Forest"},
+  {"title": "The Three-Body Problem", "year": 2008, "authors": ["Liu Cixin"], "slug": "the-three-body-problem", "series": "Remembrance of Earth's Past, book 1", "poster": "https://upload.wikimedia.org/wikipedia/en/0/0f/Threebody.jpg", "w": 256, "h": 370, "wiki": "The Three-Body Problem (novel)"},
+  {"title": "Sea of Poppies", "year": 2008, "authors": ["Amitav Ghosh"], "slug": "sea-of-poppies", "series": "Ibis trilogy, book 1", "poster": "https://upload.wikimedia.org/wikipedia/en/3/37/Ghosh_amitav_Sea_of_Poppies.jpg", "w": 255, "h": 390, "wiki": "Sea of Poppies"},
+  {"title": "The God Delusion", "year": 2006, "authors": ["Richard Dawkins"], "slug": "the-god-delusion", "poster": "https://upload.wikimedia.org/wikipedia/en/7/76/The_God_Delusion_UK.jpg", "w": 256, "h": 390, "wiki": "The God Delusion"},
   {"title": "A Feast for Crows", "year": 2005, "authors": ["George R. R. Martin"], "slug": "a-feast-for-crows", "series": "A Song of Ice and Fire, book 4", "poster": "https://upload.wikimedia.org/wikipedia/en/a/a3/AFeastForCrows.jpg", "w": 257, "h": 388, "wiki": "A Feast for Crows"},
   {"title": "The Dark Tower", "year": 2004, "authors": ["Stephen King"], "slug": "the-dark-tower-novel", "series": "The Dark Tower, book 7", "poster": "https://upload.wikimedia.org/wikipedia/en/5/54/Thedarktower7.jpg", "w": 255, "h": 392, "wiki": "The Dark Tower VII: The Dark Tower"},
   {"title": "Song of Susannah", "year": 2004, "authors": ["Stephen King"], "slug": "song-of-susannah", "series": "The Dark Tower, book 6", "poster": "https://upload.wikimedia.org/wikipedia/en/4/42/Song_of_Susannah.jpg", "w": 263, "h": 377, "wiki": "The Dark Tower VI: Song of Susannah"},
@@ -332,7 +339,8 @@ const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const peopleOf = f => [...new Set((f.directors || f.authors).map(d => SAME_DIRECTOR[d] || d))];
 const SECTIONS = {
   movies: { items: FILMS, heading: "Movies", person: "Director", noun: "films" },
-  books: { items: BOOKS, heading: "Books", person: "Author", noun: "books" }
+  books: { items: BOOKS, heading: "Books", person: "Author", noun: "books" },
+  all: { items: [...FILMS, ...BOOKS], heading: "Movies and books", person: "Creator", noun: "titles" }
 };
 const bySlug = new Map([...FILMS, ...BOOKS].map(f => [f.slug, f]));
 
@@ -484,10 +492,11 @@ document.addEventListener("error", async event => {
   img.remove();
 }, true);
 
-// The address remembers the view: #director, #books or #books-author.
+// The address remembers the view: #director, #books, #books-author, #all or #all-creator.
+const HASHES = { movies: ["", "#director"], books: ["#books", "#books-author"], all: ["#all", "#all-creator"] };
 function show(nextSection, nextMode, animate) {
   render(nextSection, nextMode, animate);
-  const hash = (nextSection === "books" ? "#books" : "") + (nextMode === "person" ? (nextSection === "books" ? "-author" : "#director") : "");
+  const hash = HASHES[nextSection][nextMode === "person" ? 1 : 0];
   history.replaceState(null, "", hash || location.pathname + location.search);
 }
 buttons.forEach(b => b.addEventListener("click", () => {
@@ -514,7 +523,7 @@ showTheme();
 
 document.getElementById("theme").hidden = false;
 document.querySelector(".controls").hidden = false;
-render(location.hash.startsWith("#books") ? "books" : "movies", /director|author/.test(location.hash) ? "person" : "year", false);
+render(location.hash.startsWith("#books") ? "books" : location.hash.startsWith("#all") ? "all" : "movies", /director|author|creator/.test(location.hash) ? "person" : "year", false);
 </script>
 </body>
 </html>
