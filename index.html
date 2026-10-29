@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Movies | Debraj Ghose</title>
-<meta name="description" content="Films Debraj Ghose has watched and liked, grouped by year or by director.">
+<meta name="description" content="Films and books Debraj Ghose has watched, read and liked, grouped by year or by director and author.">
 <meta property="og:title" content="Movies | Debraj Ghose">
-<meta property="og:description" content="Films I've watched and liked, grouped by year or by director.">
+<meta property="og:description" content="Films and books I've watched, read and liked, grouped by year or by director and author.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://debrajghose.com/movies/">
 <script>
@@ -82,7 +82,8 @@
   .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   h1 { margin: 0; color: var(--ink); font-size: 28px; line-height: 1.4; font-weight: 600; }
 
-  .controls { display: flex; align-items: center; gap: 12px; margin-top: 24px; font-size: 14px; }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 12px; margin-top: 24px; font-size: 14px; }
+  .group { display: flex; align-items: center; gap: 12px; }
   .toggle { display: inline-flex; padding: 3px; border: 1px solid var(--control-line); border-radius: 999px; font-size: 14px; }
   .toggle button {
     font: inherit; line-height: 1.6; color: var(--text);
@@ -100,7 +101,7 @@
     color: var(--ink); font-size: var(--label-size); line-height: 1.35; font-weight: 600;
     font-variant-numeric: tabular-nums; overflow-wrap: break-word;
   }
-  .by-director .cluster h2 { min-height: calc(2 * 1.35em); } /* names can take two lines; keep posters level */
+  .by-person .cluster h2 { min-height: calc(2 * 1.35em); } /* names can take two lines; keep posters level */
   .count { margin-left: 2px; color: var(--muted); font-size: 13px; font-weight: 400; }
   .cards { display: flex; flex-wrap: wrap; gap: 20px var(--gap); margin: 0; padding: 0; list-style: none; }
   .film { width: 120px; width: clamp(88px, (100cqw - (var(--per-row) - 1) * var(--gap)) / var(--per-row) - 0.5px, 124px); }
@@ -122,7 +123,7 @@
     margin-top: 8px; color: var(--ink); font-size: 13px; line-height: 1.35; font-weight: 500;
   }
   .meta { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 1.35; }
-  .by-year .meta-year, .by-director .meta-director { display: none; }
+  .by-year .meta-year, .by-person .meta-person { display: none; }
 
   footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--hairline); color: var(--muted); font-size: 13px; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -149,25 +150,31 @@
 <main class="page">
   <header>
     <div class="top">
-      <h1>Movies</h1>
+      <h1 id="heading">Movies</h1>
       <div class="toggle" id="theme" role="group" aria-label="Colour theme" hidden>
         <button type="button" data-theme="light" aria-pressed="true">Light</button>
         <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
       </div>
     </div>
     <div class="controls" hidden>
-      <span id="group-label">Group by</span>
-      <div class="toggle" role="group" aria-labelledby="group-label">
-        <button type="button" data-mode="year" aria-pressed="true">Year</button>
-        <button type="button" data-mode="director" aria-pressed="false">Director</button>
+      <div class="toggle" role="group" aria-label="Section">
+        <button type="button" data-section="movies" aria-pressed="true">Movies</button>
+        <button type="button" data-section="books" aria-pressed="false">Books</button>
+      </div>
+      <div class="group">
+        <span id="group-label">Group by</span>
+        <div class="toggle" role="group" aria-labelledby="group-label">
+          <button type="button" data-mode="year" aria-pressed="true">Year</button>
+          <button type="button" data-mode="person" aria-pressed="false">Director</button>
+        </div>
       </div>
     </div>
   </header>
 
   <div id="films" class="by-year"></div>
-  <noscript><p>Turn on JavaScript to see the films.</p></noscript>
+  <noscript><p>Turn on JavaScript to see the films and books.</p></noscript>
 
-  <footer>Posters from <a href="https://en.wikipedia.org/">Wikipedia</a>.</footer>
+  <footer>Posters and book covers from <a href="https://en.wikipedia.org/">Wikipedia</a>.</footer>
 </main>
 
 <script>
@@ -272,14 +279,62 @@ const FILMS = [
   {"title": "Citizen Kane", "year": 1941, "directors": ["Orson Welles"], "slug": "citizen-kane", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg/500px-Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg", "w": 500, "h": 751, "wiki": "Citizen Kane"},
 ];
 
+// The book list works the same way: newest first, with "authors" in place of "directors". "year" is the year the
+// book was first published, "poster" is the cover from the book's English Wikipedia article ("wiki"), and the optional
+// "series" is shown when you hover over a cover.
+const BOOKS = [
+  {"title": "Project Hail Mary", "year": 2021, "authors": ["Andy Weir"], "slug": "project-hail-mary", "poster": "https://upload.wikimedia.org/wikipedia/en/a/ad/Project_Hail_Mary%2C_First_Edition_Cover_%282021%29.jpg", "w": 257, "h": 388, "wiki": "Project Hail Mary"},
+  {"title": "A Dance with Dragons", "year": 2011, "authors": ["George R. R. Martin"], "slug": "a-dance-with-dragons", "series": "A Song of Ice and Fire, book 5", "poster": "https://upload.wikimedia.org/wikipedia/en/5/5d/A_Dance_With_Dragons_US.jpg", "w": 262, "h": 388, "wiki": "A Dance with Dragons"},
+  {"title": "1Q84", "year": 2009, "authors": ["Haruki Murakami"], "slug": "1q84", "poster": "https://upload.wikimedia.org/wikipedia/en/8/8e/1Q84bookcover.png", "w": 263, "h": 379, "wiki": "1Q84"},
+  {"title": "A Feast for Crows", "year": 2005, "authors": ["George R. R. Martin"], "slug": "a-feast-for-crows", "series": "A Song of Ice and Fire, book 4", "poster": "https://upload.wikimedia.org/wikipedia/en/a/a3/AFeastForCrows.jpg", "w": 257, "h": 388, "wiki": "A Feast for Crows"},
+  {"title": "The Dark Tower", "year": 2004, "authors": ["Stephen King"], "slug": "the-dark-tower-novel", "series": "The Dark Tower, book 7", "poster": "https://upload.wikimedia.org/wikipedia/en/5/54/Thedarktower7.jpg", "w": 255, "h": 392, "wiki": "The Dark Tower VII: The Dark Tower"},
+  {"title": "Song of Susannah", "year": 2004, "authors": ["Stephen King"], "slug": "song-of-susannah", "series": "The Dark Tower, book 6", "poster": "https://upload.wikimedia.org/wikipedia/en/4/42/Song_of_Susannah.jpg", "w": 263, "h": 377, "wiki": "The Dark Tower VI: Song of Susannah"},
+  {"title": "Wolves of the Calla", "year": 2003, "authors": ["Stephen King"], "slug": "wolves-of-the-calla", "series": "The Dark Tower, book 5", "poster": "https://upload.wikimedia.org/wikipedia/en/9/90/Wolvescalla.jpg", "w": 257, "h": 387, "wiki": "The Dark Tower V: Wolves of the Calla"},
+  {"title": "Life of Pi", "year": 2001, "authors": ["Yann Martel"], "slug": "life-of-pi", "poster": "https://upload.wikimedia.org/wikipedia/en/4/45/Life_of_Pi_cover.png", "w": 256, "h": 389, "wiki": "Life of Pi"},
+  {"title": "A Storm of Swords", "year": 2000, "authors": ["George R. R. Martin"], "slug": "a-storm-of-swords", "series": "A Song of Ice and Fire, book 3", "poster": "https://upload.wikimedia.org/wikipedia/en/2/24/AStormOfSwords.jpg", "w": 262, "h": 379, "wiki": "A Storm of Swords"},
+  {"title": "The Fifth Elephant", "year": 1999, "authors": ["Terry Pratchett"], "slug": "the-fifth-elephant", "series": "Discworld", "poster": "https://upload.wikimedia.org/wikipedia/en/7/7d/The-fifth-elephant-1.jpg", "w": 259, "h": 391, "wiki": "The Fifth Elephant"},
+  {"title": "A Clash of Kings", "year": 1998, "authors": ["George R. R. Martin"], "slug": "a-clash-of-kings", "series": "A Song of Ice and Fire, book 2", "poster": "https://upload.wikimedia.org/wikipedia/en/3/39/AClashOfKings.jpg", "w": 201, "h": 290, "wiki": "A Clash of Kings"},
+  {"title": "Wizard and Glass", "year": 1997, "authors": ["Stephen King"], "slug": "wizard-and-glass", "series": "The Dark Tower, book 4", "poster": "https://upload.wikimedia.org/wikipedia/en/7/7f/Wizard_and_Glass.jpg", "w": 269, "h": 370, "wiki": "The Dark Tower IV: Wizard and Glass"},
+  {"title": "A Game of Thrones", "year": 1996, "authors": ["George R. R. Martin"], "slug": "a-game-of-thrones", "series": "A Song of Ice and Fire, book 1", "poster": "https://upload.wikimedia.org/wikipedia/en/9/93/AGameOfThrones.jpg", "w": 259, "h": 385, "wiki": "A Game of Thrones"},
+  {"title": "The Prestige", "year": 1995, "authors": ["Christopher Priest"], "slug": "the-prestige-novel", "poster": "https://upload.wikimedia.org/wikipedia/en/3/30/Theprestigecover.jpg", "w": 259, "h": 385, "wiki": "The Prestige (novel)"},
+  {"title": "Forward the Foundation", "year": 1993, "authors": ["Isaac Asimov"], "slug": "forward-the-foundation", "series": "Foundation series", "poster": "https://upload.wikimedia.org/wikipedia/en/9/93/Forward_the_Foundation_cover.jpg", "w": 270, "h": 381, "wiki": "Forward the Foundation"},
+  {"title": "The Waste Lands", "year": 1991, "authors": ["Stephen King"], "slug": "the-waste-lands", "series": "The Dark Tower, book 3", "poster": "https://upload.wikimedia.org/wikipedia/en/4/49/The_Waste_Lands.jpg", "w": 260, "h": 382, "wiki": "The Dark Tower III: The Waste Lands"},
+  {"title": "Prelude to Foundation", "year": 1988, "authors": ["Isaac Asimov"], "slug": "prelude-to-foundation", "series": "Foundation series", "poster": "https://upload.wikimedia.org/wikipedia/en/8/8a/Prelude_to_Foundation_cover.jpg", "w": 262, "h": 387, "wiki": "Prelude to Foundation"},
+  {"title": "Norwegian Wood", "year": 1987, "authors": ["Haruki Murakami"], "slug": "norwegian-wood", "poster": "https://upload.wikimedia.org/wikipedia/en/e/e0/Norwegian_Wood_%28novel%29_%28Book_Cover%29.jpeg", "w": 254, "h": 392, "wiki": "Norwegian Wood (novel)"},
+  {"title": "The Drawing of the Three", "year": 1987, "authors": ["Stephen King"], "slug": "the-drawing-of-the-three", "series": "The Dark Tower, book 2", "poster": "https://upload.wikimedia.org/wikipedia/en/3/3a/The_Drawing_of_the_Three.jpg", "w": 264, "h": 377, "wiki": "The Dark Tower II: The Drawing of the Three"},
+  {"title": "Foundation and Earth", "year": 1986, "authors": ["Isaac Asimov"], "slug": "foundation-and-earth", "series": "Foundation series", "poster": "https://upload.wikimedia.org/wikipedia/en/e/eb/Foundation_and_Earth_%28book_cover%29.jpg", "w": 258, "h": 392, "wiki": "Foundation and Earth"},
+  {"title": "Foundation's Edge", "year": 1982, "authors": ["Isaac Asimov"], "slug": "foundations-edge", "series": "Foundation series", "poster": "https://upload.wikimedia.org/wikipedia/en/c/cb/IsaacAsimov_Foundation%27sEdge.jpg", "w": 258, "h": 392, "wiki": "Foundation's Edge"},
+  {"title": "The Gunslinger", "year": 1982, "authors": ["Stephen King"], "slug": "the-gunslinger", "series": "The Dark Tower, book 1", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/The_Dark_Tower_%E2%80%93_The_Gunslinger_%281982%29_front_cover%2C_first_edition.jpg/500px-The_Dark_Tower_%E2%80%93_The_Gunslinger_%281982%29_front_cover%2C_first_edition.jpg", "w": 500, "h": 730, "wiki": "The Dark Tower: The Gunslinger"},
+  {"title": "The Affirmation", "year": 1981, "authors": ["Christopher Priest"], "slug": "the-affirmation", "poster": "https://upload.wikimedia.org/wikipedia/en/7/7f/TheAffirmation.jpg", "w": 236, "h": 365, "wiki": "The Affirmation"},
+  {"title": "The Hitchhiker's Guide to the Galaxy", "year": 1979, "authors": ["Douglas Adams"], "slug": "the-hitchhikers-guide-to-the-galaxy", "poster": "https://upload.wikimedia.org/wikipedia/en/b/bd/H2G2_UK_front_cover.jpg", "w": 200, "h": 350, "wiki": "The Hitchhiker's Guide to the Galaxy (novel)"},
+  {"title": "The Wonderful Story of Henry Sugar and Six More", "year": 1977, "authors": ["Roald Dahl"], "slug": "henry-sugar-and-six-more", "series": "short stories", "poster": "https://upload.wikimedia.org/wikipedia/en/d/dc/HenrySugar.jpg", "w": 254, "h": 381, "wiki": "The Wonderful Story of Henry Sugar and Six More"},
+  {"title": "Switch Bitch", "year": 1974, "authors": ["Roald Dahl"], "slug": "switch-bitch", "series": "short stories", "poster": "https://upload.wikimedia.org/wikipedia/en/a/a7/SwitchBitch.jpg", "w": 254, "h": 375, "wiki": "Switch Bitch"},
+  {"title": "Shardik", "year": 1974, "authors": ["Richard Adams"], "slug": "shardik", "poster": "https://upload.wikimedia.org/wikipedia/en/f/fe/Shardik_cover_1974.jpg", "w": 253, "h": 393, "wiki": "Shardik"},
+  {"title": "Watership Down", "year": 1972, "authors": ["Richard Adams"], "slug": "watership-down", "poster": "https://upload.wikimedia.org/wikipedia/en/5/5e/Richard_Adams_WatershipDown.jpg", "w": 253, "h": 394, "wiki": "Watership Down"},
+  {"title": "Catch-22", "year": 1961, "authors": ["Joseph Heller"], "slug": "catch-22", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Catch-22_%281961%29_front_cover%2C_first_edition.jpg/500px-Catch-22_%281961%29_front_cover%2C_first_edition.jpg", "w": 500, "h": 737, "wiki": "Catch-22"},
+  {"title": "Kiss Kiss", "year": 1960, "authors": ["Roald Dahl"], "slug": "kiss-kiss", "series": "short stories", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c6/Dahl_Kiss_Kiss.jpg", "w": 254, "h": 366, "wiki": "Kiss Kiss (book)"},
+  {"title": "Someone Like You", "year": 1953, "authors": ["Roald Dahl"], "slug": "someone-like-you", "series": "short stories", "poster": "https://upload.wikimedia.org/wikipedia/en/3/39/Someone_like_you.gif", "w": 191, "h": 285, "wiki": "Someone like You (short story collection)"},
+  {"title": "Second Foundation", "year": 1953, "authors": ["Isaac Asimov"], "slug": "second-foundation", "series": "Foundation series", "poster": "https://upload.wikimedia.org/wikipedia/en/8/8f/Second_foundation.jpg", "w": 260, "h": 390, "wiki": "Second Foundation"},
+  {"title": "Foundation and Empire", "year": 1952, "authors": ["Isaac Asimov"], "slug": "foundation-and-empire", "series": "Foundation series", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c2/Foundation_and_empire.jpg", "w": 257, "h": 394, "wiki": "Foundation and Empire"},
+  {"title": "Foundation", "year": 1951, "authors": ["Isaac Asimov"], "slug": "foundation-novel", "series": "Foundation series", "poster": "https://upload.wikimedia.org/wikipedia/en/d/d9/Foundation_-_Isaac_Asimov_%28Gnome_1951%29.jpg", "w": 245, "h": 360, "wiki": "Foundation (Asimov novel)"},
+  {"title": "Over to You", "year": 1946, "authors": ["Roald Dahl"], "slug": "over-to-you", "series": "short stories", "poster": "https://upload.wikimedia.org/wikipedia/en/f/fc/OverToYou.jpg", "w": 288, "h": 359, "wiki": "Over to You: Ten Stories of Flyers and Flying"}
+];
+
 // Treat the Coen brothers as one director when grouping (their early films credit Joel alone).
 const SAME_DIRECTOR = { "Joel Coen": "Joel & Ethan Coen", "Ethan Coen": "Joel & Ethan Coen" };
 
 const root = document.getElementById("films");
 const buttons = document.querySelectorAll("button[data-mode]");
+const sectionButtons = document.querySelectorAll("button[data-section]");
+const personButton = document.querySelector("button[data-mode=person]");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-const directorsOf = f => [...new Set(f.directors.map(d => SAME_DIRECTOR[d] || d))];
-const bySlug = new Map(FILMS.map(f => [f.slug, f]));
+// Directors for a film, authors for a book.
+const peopleOf = f => [...new Set((f.directors || f.authors).map(d => SAME_DIRECTOR[d] || d))];
+const SECTIONS = {
+  movies: { items: FILMS, heading: "Movies", person: "Director", noun: "films" },
+  books: { items: BOOKS, heading: "Books", person: "Author", noun: "books" }
+};
+const bySlug = new Map([...FILMS, ...BOOKS].map(f => [f.slug, f]));
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -291,7 +346,7 @@ function el(tag, className, text) {
 function makeCard(f) {
   const li = el("li", "film");
   const card = el("div", "card");
-  card.title = f.original ? f.title + " (" + f.original + ")" : f.title;
+  card.title = f.original ? f.title + " (" + f.original + ")" : f.series ? f.title + " (" + f.series + ")" : f.title;
   const frame = el("span", "frame");
   frame.dataset.slug = f.slug;
   if (f.poster) {
@@ -316,23 +371,23 @@ function makeCard(f) {
   card.append(
     frame,
     el("span", "title", f.title),
-    el("span", "meta meta-director", directorsOf(f).join(", ") || "Director TBA"),
+    el("span", "meta meta-person", peopleOf(f).join(", ") || "Director TBA"),
     el("span", "meta meta-year", f.year || "TBA")
   );
   li.append(card);
   return li;
 }
 
-function groupsFor(mode) {
+function groupsFor(mode, items) {
   const groups = new Map();
   const add = (name, f) => {
     if (!groups.has(name)) groups.set(name, []);
     groups.get(name).push(f);
   };
-  for (const f of FILMS) {
+  for (const f of items) {
     if (mode === "year") add(String(f.year || "TBA"), f);
     else {
-      const names = directorsOf(f);
+      const names = peopleOf(f);
       if (names.length) names.forEach(name => add(name, f));
       else add("TBA", f);
     }
@@ -342,29 +397,31 @@ function groupsFor(mode) {
   if (mode === "year") {
     list.sort((a, b) => tbaLast(a, b) || Number(b.name) - Number(a.name));
   } else {
-    // Directors with the most films first, then alphabetical; each director's films newest first.
+    // People with the most films or books first, then alphabetical; each person's newest first.
     list.sort((a, b) => tbaLast(a, b) || b.films.length - a.films.length || a.name.localeCompare(b.name));
     list.forEach(g => g.films.sort((a, b) => (b.year || 9999) - (a.year || 9999)));
   }
   return list;
 }
 
-const cards = new Map(FILMS.map(f => [f.slug, makeCard(f)]));
+const cards = new Map([...FILMS, ...BOOKS].map(f => [f.slug, makeCard(f)]));
+let section = null;
 let mode = null;
 
-function render(next, animate) {
+function render(nextSection, next, animate) {
+  const sec = SECTIONS[nextSection];
   // Remember where every poster is, regroup, then glide each poster from its old spot to its new one.
   const before = new Map();
   if (animate) for (const [slug, li] of cards) if (li.isConnected) before.set(slug, li.getBoundingClientRect());
 
   const used = new Set();
   const clusters = document.createDocumentFragment();
-  for (const group of groupsFor(next)) {
+  for (const group of groupsFor(next, sec.items)) {
     const section = el("section", "cluster");
     const h2 = el("h2", null, group.name);
     if (group.films.length > 1) {
       const count = el("span", "count", String(group.films.length));
-      count.append(el("span", "sr", " films"));
+      count.append(el("span", "sr", " " + sec.noun));
       h2.append(" ", count);
     }
     const ul = el("ul", "cards");
@@ -378,8 +435,13 @@ function render(next, animate) {
   }
   root.replaceChildren(clusters);
   root.className = "by-" + next;
+  section = nextSection;
   mode = next;
   buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === next)));
+  sectionButtons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.section === nextSection)));
+  personButton.textContent = sec.person;
+  document.getElementById("heading").textContent = sec.heading;
+  document.title = sec.heading + " | Debraj Ghose";
 
   if (!animate || reduceMotion.matches) return;
   for (const [slug, li] of cards) {
@@ -422,10 +484,17 @@ document.addEventListener("error", async event => {
   img.remove();
 }, true);
 
+// The address remembers the view: #director, #books or #books-author.
+function show(nextSection, nextMode, animate) {
+  render(nextSection, nextMode, animate);
+  const hash = (nextSection === "books" ? "#books" : "") + (nextMode === "person" ? (nextSection === "books" ? "-author" : "#director") : "");
+  history.replaceState(null, "", hash || location.pathname + location.search);
+}
 buttons.forEach(b => b.addEventListener("click", () => {
-  if (b.dataset.mode === mode) return;
-  render(b.dataset.mode, true);
-  history.replaceState(null, "", b.dataset.mode === "director" ? "#director" : location.pathname + location.search);
+  if (b.dataset.mode !== mode) show(section, b.dataset.mode, true);
+}));
+sectionButtons.forEach(b => b.addEventListener("click", () => {
+  if (b.dataset.section !== section) show(b.dataset.section, mode, true);
 }));
 
 // Light/Dark toggle. Until the visitor picks one, the page follows the device setting.
@@ -445,7 +514,7 @@ showTheme();
 
 document.getElementById("theme").hidden = false;
 document.querySelector(".controls").hidden = false;
-render(location.hash === "#director" ? "director" : "year", false);
+render(location.hash.startsWith("#books") ? "books" : "movies", /director|author/.test(location.hash) ? "person" : "year", false);
 </script>
 </body>
 </html>
