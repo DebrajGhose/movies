@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Movies | Debraj Ghose</title>
+<meta name="description" content="Films Debraj Ghose has watched and liked, grouped by year or by director.">
+<meta property="og:title" content="Movies | Debraj Ghose">
+<meta property="og:description" content="Films I've watched and liked, grouped by year or by director.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://debrajghose.com/movies/">
+<style>
+  /* Palette and type follow debrajghose.com so this page feels like part of the site. */
+  :root {
+    --paper: #ffffff;
+    --ink: #2b2b2b;
+    --text: #555555;
+    --muted: #767676;
+    --hairline: #eeeeee;
+    --mint: #4acaa8;
+    --frame: #f2f2f2;
+    --per-row: 8; /* posters per full row: the biggest clusters (8 films) fit on one line */
+    --gap: 12px;
+    --cluster-gap-x: 40px;
+    --cluster-gap-y: 36px;
+    --label-size: 15px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--text);
+    font: 15px/1.75 -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  a { color: var(--mint); text-decoration: none; border-bottom: 1px dotted var(--mint); }
+  a:hover { border-bottom-style: solid; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+
+  .page { max-width: 1120px; margin: 0 auto; padding: 56px 32px 64px; }
+
+  header { max-width: 640px; margin-bottom: 40px; }
+  .crumb { margin: 0 0 4px; font-size: 14px; }
+  h1 { margin: 0; color: var(--ink); font-size: 28px; line-height: 1.4; font-weight: 600; }
+  .intro { margin: 6px 0 0; }
+
+  .controls { display: flex; align-items: center; gap: 12px; margin-top: 24px; font-size: 14px; }
+  .toggle { display: inline-flex; padding: 3px; border: 1px solid #e2e2e2; border-radius: 999px; }
+  .toggle button {
+    font: inherit; line-height: 1.6; color: var(--text);
+    background: none; border: 0; border-radius: 999px; padding: 4px 16px; cursor: pointer;
+  }
+  .toggle button[aria-pressed="true"] { background: var(--mint); color: #12352c; font-weight: 600; }
+  .toggle button[aria-pressed="false"]:hover { color: var(--ink); background: #f5f5f5; }
+
+  /* Each year or director is a small cluster; clusters flow and wrap so one-film groups pack together. */
+  #films { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--cluster-gap-y) var(--cluster-gap-x); container-type: inline-size; }
+  .cluster { flex: 0 1 auto; min-width: 0; }
+  .cluster h2 {
+    width: 0; min-width: 100%; /* wrap the label to the width of its posters instead of widening the cluster */
+    margin: 0 0 10px;
+    color: var(--ink); font-size: var(--label-size); line-height: 1.35; font-weight: 600;
+    font-variant-numeric: tabular-nums; overflow-wrap: break-word;
+  }
+  .by-director .cluster h2 { min-height: calc(2 * 1.35em); } /* names can take two lines; keep posters level */
+  .count { margin-left: 2px; color: var(--muted); font-size: 13px; font-weight: 400; }
+  .cards { display: flex; flex-wrap: wrap; gap: 20px var(--gap); margin: 0; padding: 0; list-style: none; }
+  .film { width: 120px; width: clamp(88px, (100cqw - (var(--per-row) - 1) * var(--gap)) / var(--per-row) - 0.5px, 124px); }
+
+  .card { display: block; color: inherit; border: 0; }
+  .frame { position: relative; display: block; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 3px; background: var(--frame); }
+  .frame::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); pointer-events: none; }
+  .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* Landscape posters are shown whole, over a soft blur of themselves. */
+  .frame.wide::before { content: ""; position: absolute; inset: -12%; background: var(--bg) center / cover; filter: blur(12px); opacity: .55; }
+  .frame.wide img { object-fit: contain; }
+  .stand-in { display: none; }
+  .frame.empty .stand-in {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    padding: 12px; text-align: center; color: var(--muted); font-size: 13px; line-height: 1.35;
+  }
+  .title {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+    margin-top: 8px; color: var(--ink); font-size: 13px; line-height: 1.35; font-weight: 500;
+  }
+  .card:hover .title { text-decoration: underline; text-decoration-color: var(--mint); text-underline-offset: 2px; }
+  .meta { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+  .by-year .meta-year, .by-director .meta-director { display: none; }
+
+  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--hairline); color: var(--muted); font-size: 13px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media (max-width: 899px) {
+    :root { --per-row: 6; --cluster-gap-x: 28px; }
+  }
+  @media (max-width: 560px) {
+    :root {
+      --per-row: 3;
+      --gap: 10px;
+      --cluster-gap-x: var(--gap); /* clusters share one three-column grid on phones */
+      --cluster-gap-y: 28px;
+      --label-size: 13px;
+    }
+    .film { width: calc((100cqw - 2 * var(--gap)) / 3 - 0.5px); }
+    .page { padding: 32px 16px 48px; }
+    header { margin-bottom: 32px; }
+    .count { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <header>
+    <p class="crumb"><a href="/">Debraj Ghose</a></p>
+    <h1>Movies</h1>
+    <p class="intro"><span id="summary">Films I've watched and liked</span>. The full log is on <a href="https://letterboxd.com/daybridgeghost/films/">Letterboxd</a>.</p>
+    <div class="controls" hidden>
+      <span id="group-label">Group by</span>
+      <div class="toggle" role="group" aria-labelledby="group-label">
+        <button type="button" data-mode="year" aria-pressed="true">Year</button>
+        <button type="button" data-mode="director" aria-pressed="false">Director</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="films" class="by-year"></div>
+  <noscript><p>Turn on JavaScript to see the films, or browse them on <a href="https://letterboxd.com/daybridgeghost/films/">Letterboxd</a>.</p></noscript>
+
+  <footer>Posters from <a href="https://en.wikipedia.org/">Wikipedia</a>. Film details from <a href="https://letterboxd.com/daybridgeghost/">Letterboxd</a>.</footer>
+</main>
+
+<script>
+// The film list. To add a film, copy a line and change it. "slug" is the end of the film's
+// Letterboxd address (letterboxd.com/film/<slug>/); "poster" is an image link, "w" and "h" its size.
+const FILMS = [
+  {"title": "Mickey 17", "year": 2025, "directors": ["Bong Joon Ho"], "slug": "mickey-17", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2d/Mickey_17_film_poster.png", "w": 255, "h": 378, "wiki": "Mickey 17"},
+  {"title": "The Wonderful Story of Henry Sugar", "year": 2023, "directors": ["Wes Anderson"], "slug": "the-wonderful-story-of-henry-sugar", "poster": "https://upload.wikimedia.org/wikipedia/en/5/5d/Henry_Sugar_poster.webp", "w": 259, "h": 384, "wiki": "The Wonderful Story of Henry Sugar (film)"},
+  {"title": "Monster", "year": 2023, "directors": ["Hirokazu Kore-eda"], "slug": "monster-2023", "original": "怪物", "poster": "https://upload.wikimedia.org/wikipedia/en/a/a3/Monster_2023_film_poster.png", "w": 267, "h": 371, "wiki": "Monster (2023 Japanese film)"},
+  {"title": "Past Lives", "year": 2023, "directors": ["Celine Song"], "slug": "past-lives", "poster": "https://upload.wikimedia.org/wikipedia/en/d/da/Past_Lives_film_poster.png", "w": 255, "h": 378, "wiki": "Past Lives (film)"},
+  {"title": "Broker", "year": 2022, "directors": ["Hirokazu Kore-eda"], "slug": "broker-2022", "original": "브로커", "poster": "https://upload.wikimedia.org/wikipedia/en/4/41/Broker_%282022_film%29.jpg", "w": 264, "h": 377, "wiki": "Broker (2022 film)"},
+  {"title": "Decision to Leave", "year": 2022, "directors": ["Park Chan-wook"], "slug": "decision-to-leave", "original": "헤어질 결심", "poster": "https://upload.wikimedia.org/wikipedia/en/8/82/Decision_to_Leave_film_poster.jpg", "w": 250, "h": 360, "wiki": "Decision to Leave"},
+  {"title": "Triangle of Sadness", "year": 2022, "directors": ["Ruben Östlund"], "slug": "triangle-of-sadness", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2d/TriangleOfSadness2022Poster.jpg", "w": 258, "h": 387, "wiki": "Triangle of Sadness"},
+  {"title": "The French Dispatch of the Liberty, Kansas Evening Sun", "year": 2021, "directors": ["Wes Anderson"], "slug": "the-french-dispatch-of-the-liberty-kansas", "poster": "https://upload.wikimedia.org/wikipedia/en/7/78/The_French_Dispatch.jpeg", "w": 220, "h": 326, "wiki": "The French Dispatch"},
+  {"title": "Drive My Car", "year": 2021, "directors": ["Ryusuke Hamaguchi"], "slug": "drive-my-car", "original": "ドライブ・マイ・カー", "poster": "https://upload.wikimedia.org/wikipedia/en/3/3d/Drive_My_Car_movie_poster.jpeg", "w": 265, "h": 376, "wiki": "Drive My Car (film)"},
+  {"title": "Parasite", "year": 2019, "directors": ["Bong Joon Ho"], "slug": "parasite-2019", "original": "기생충", "poster": "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29.png", "w": 265, "h": 378, "wiki": "Parasite (2019 film)"},
+  {"title": "The Ballad of Buster Scruggs", "year": 2018, "directors": ["Joel Coen", "Ethan Coen"], "slug": "the-ballad-of-buster-scruggs", "poster": "https://upload.wikimedia.org/wikipedia/en/1/13/The_Ballad_of_Buster_Scruggs_%282018_poster%29.png", "w": 250, "h": 370, "wiki": "The Ballad of Buster Scruggs"},
+  {"title": "Shoplifters", "year": 2018, "directors": ["Hirokazu Kore-eda"], "slug": "shoplifters", "original": "万引き家族", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c9/Shoplifters_%28film%29.jpg", "w": 220, "h": 311, "wiki": "Shoplifters (film)"},
+  {"title": "Isle of Dogs", "year": 2018, "directors": ["Wes Anderson"], "slug": "isle-of-dogs-2018", "poster": "https://upload.wikimedia.org/wikipedia/en/2/23/IsleOfDogsFirstLook.jpg", "w": 220, "h": 344, "wiki": "Isle of Dogs (film)"},
+  {"title": "Sorry to Bother You", "year": 2018, "directors": ["Boots Riley"], "slug": "sorry-to-bother-you", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c7/Sorry_to_Bother_You.png", "w": 220, "h": 327, "wiki": "Sorry to Bother You"},
+  {"title": "La La Land", "year": 2016, "directors": ["Damien Chazelle"], "slug": "la-la-land", "poster": "https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.png", "w": 260, "h": 385, "wiki": "La La Land"},
+  {"title": "After the Storm", "year": 2016, "directors": ["Hirokazu Kore-eda"], "slug": "after-the-storm-2016", "original": "海よりもまだ深く", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c1/After_the_Storm_2016.jpg", "w": 220, "h": 326, "wiki": "After the Storm (2016 film)"},
+  {"title": "The Handmaiden", "year": 2016, "directors": ["Park Chan-wook"], "slug": "the-handmaiden", "original": "아가씨", "poster": "https://upload.wikimedia.org/wikipedia/en/a/a2/The_Handmaiden_film.png", "w": 264, "h": 377, "wiki": "The Handmaiden"},
+  {"title": "Train to Busan", "year": 2016, "directors": ["Yeon Sang-ho"], "slug": "train-to-busan", "original": "부산행", "poster": "https://upload.wikimedia.org/wikipedia/en/9/95/Train_to_Busan.jpg", "w": 220, "h": 315, "wiki": "Train to Busan"},
+  {"title": "Gone Girl", "year": 2014, "directors": ["David Fincher"], "slug": "gone-girl", "poster": "https://upload.wikimedia.org/wikipedia/en/0/05/Gone_Girl_Poster.jpg", "w": 220, "h": 326, "wiki": "Gone Girl (film)"},
+  {"title": "The Grand Budapest Hotel", "year": 2014, "directors": ["Wes Anderson"], "slug": "the-grand-budapest-hotel", "poster": "https://upload.wikimedia.org/wikipedia/en/1/1c/The_Grand_Budapest_Hotel.png", "w": 220, "h": 344, "wiki": "The Grand Budapest Hotel"},
+  {"title": "Snowpiercer", "year": 2013, "directors": ["Bong Joon Ho"], "slug": "snowpiercer", "original": "설국열차", "poster": "https://upload.wikimedia.org/wikipedia/en/b/b4/Snowpiercer_poster.jpg", "w": 259, "h": 384, "wiki": "Snowpiercer"},
+  {"title": "Inside Llewyn Davis", "year": 2013, "directors": ["Joel Coen", "Ethan Coen"], "slug": "inside-llewyn-davis", "poster": "https://upload.wikimedia.org/wikipedia/en/d/df/Inside_Llewyn_Davis_Poster.jpg", "w": 220, "h": 340, "wiki": "Inside Llewyn Davis"},
+  {"title": "Stoker", "year": 2013, "directors": ["Park Chan-wook"], "slug": "stoker", "poster": "https://upload.wikimedia.org/wikipedia/en/e/ea/Stoker_%282013%29.png", "w": 260, "h": 385, "wiki": "Stoker (film)"},
+  {"title": "Chronicle", "year": 2012, "directors": ["Josh Trank"], "slug": "chronicle", "poster": "https://upload.wikimedia.org/wikipedia/en/f/f9/Chronicle_Film_Poster.jpg", "w": 248, "h": 366, "wiki": "Chronicle (film)"},
+  {"title": "Elite Squad: The Enemy Within", "year": 2010, "directors": ["José Padilha"], "slug": "elite-squad-the-enemy-within", "original": "Tropa de Elite 2", "poster": "https://upload.wikimedia.org/wikipedia/en/3/32/The_Elite_Squad_2.jpg", "w": 220, "h": 325, "wiki": "Elite Squad: The Enemy Within"},
+  {"title": "Inception", "year": 2010, "directors": ["Christopher Nolan"], "slug": "inception", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg", "w": 220, "h": 326, "wiki": "Inception"},
+  {"title": "Fantastic Mr. Fox", "year": 2009, "directors": ["Wes Anderson"], "slug": "fantastic-mr-fox", "poster": "https://upload.wikimedia.org/wikipedia/en/a/af/Fantastic_mr_fox.jpg", "w": 220, "h": 326, "wiki": "Fantastic Mr. Fox (film)"},
+  {"title": "Mother", "year": 2009, "directors": ["Bong Joon Ho"], "slug": "mother-2009", "original": "마더", "poster": "https://upload.wikimedia.org/wikipedia/en/8/80/Mother_film_poster.jpg", "w": 264, "h": 378, "wiki": "Mother (2009 film)"},
+  {"title": "Thirst", "year": 2009, "directors": ["Park Chan-wook"], "slug": "thirst-2009", "original": "박쥐", "poster": "https://upload.wikimedia.org/wikipedia/en/b/b1/Thirstposter.jpg", "w": 263, "h": 378, "wiki": "Thirst (2009 film)"},
+  {"title": "It Might Get Loud", "year": 2008, "directors": ["Davis Guggenheim"], "slug": "it-might-get-loud", "poster": "https://upload.wikimedia.org/wikipedia/en/b/b9/Itmightgetloud.PNG", "w": 259, "h": 385, "wiki": "It Might Get Loud"},
+  {"title": "Burn After Reading", "year": 2008, "directors": ["Ethan Coen", "Joel Coen"], "slug": "burn-after-reading", "poster": "https://upload.wikimedia.org/wikipedia/en/4/42/Burn_After_Reading.png", "w": 220, "h": 326, "wiki": "Burn After Reading"},
+  {"title": "Cloverfield", "year": 2008, "directors": ["Matt Reeves"], "slug": "cloverfield", "poster": "https://upload.wikimedia.org/wikipedia/en/f/f1/Cloverfield_theatrical_poster.jpg", "w": 259, "h": 383, "wiki": "Cloverfield"},
+  {"title": "The Darjeeling Limited", "year": 2007, "directors": ["Wes Anderson"], "slug": "the-darjeeling-limited", "poster": "https://upload.wikimedia.org/wikipedia/en/1/1e/Darjeeling_Limited_Poster.jpg", "w": 259, "h": 383, "wiki": "The Darjeeling Limited"},
+  {"title": "Elite Squad", "year": 2007, "directors": ["José Padilha"], "slug": "elite-squad", "original": "Tropa de Elite", "poster": "https://upload.wikimedia.org/wikipedia/en/d/d7/Elite_Squad.png", "w": 220, "h": 325, "wiki": "Elite Squad"},
+  {"title": "No Country for Old Men", "year": 2007, "directors": ["Joel Coen", "Ethan Coen"], "slug": "no-country-for-old-men", "poster": "https://upload.wikimedia.org/wikipedia/en/8/8b/No_Country_for_Old_Men_poster.jpg", "w": 220, "h": 324, "wiki": "No Country for Old Men"},
+  {"title": "The Band's Visit", "year": 2007, "directors": ["Eran Kolirin"], "slug": "the-bands-visit", "original": "ביקור התזמורת", "poster": "https://upload.wikimedia.org/wikipedia/en/4/4d/The_Band%27s_Visit.jpg", "w": 264, "h": 377, "wiki": "The Band's Visit"},
+  {"title": "28 Weeks Later", "year": 2007, "directors": ["Juan Carlos Fresnadillo"], "slug": "28-weeks-later", "poster": "https://upload.wikimedia.org/wikipedia/en/4/46/28_Weeks_Later_poster.jpg", "w": 364, "h": 273, "wiki": "28 Weeks Later"},
+  {"title": "The Lives of Others", "year": 2006, "directors": ["Florian Henckel von Donnersmarck"], "slug": "the-lives-of-others", "original": "Das Leben der Anderen", "poster": "https://upload.wikimedia.org/wikipedia/en/9/9f/Leben_der_anderen.jpg", "w": 266, "h": 373, "wiki": "The Lives of Others"},
+  {"title": "Lady Vengeance", "year": 2005, "directors": ["Park Chan-wook"], "slug": "lady-vengeance", "original": "친절한 금자씨", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c8/Lady_Vengeance_poster.png", "w": 264, "h": 377, "wiki": "Lady Vengeance"},
+  {"title": "Oldboy", "year": 2003, "directors": ["Park Chan-wook"], "slug": "oldboy", "original": "올드보이", "poster": "https://upload.wikimedia.org/wikipedia/en/6/67/Oldboykoreanposter.jpg", "w": 260, "h": 371, "wiki": "Oldboy (2003 film)"},
+  {"title": "Memories of Murder", "year": 2003, "directors": ["Bong Joon Ho"], "slug": "memories-of-murder", "original": "살인의 추억", "poster": "https://upload.wikimedia.org/wikipedia/en/0/01/Salinui-chueok-south-korean-movie-poster-md.jpg", "w": 258, "h": 387, "wiki": "Memories of Murder"},
+  {"title": "28 Days Later", "year": 2002, "directors": ["Danny Boyle"], "slug": "28-days-later", "poster": "https://upload.wikimedia.org/wikipedia/en/e/e4/28_days_later.jpg", "w": 361, "h": 275, "wiki": "28 Days Later"},
+  {"title": "City of God", "year": 2002, "directors": ["Fernando Meirelles"], "slug": "city-of-god", "original": "Cidade de Deus", "poster": "https://upload.wikimedia.org/wikipedia/en/1/10/CidadedeDeus.jpg", "w": 260, "h": 383, "wiki": "City of God (2002 film)"},
+  {"title": "Sympathy for Mr. Vengeance", "year": 2002, "directors": ["Park Chan-wook"], "slug": "sympathy-for-mr-vengeance", "original": "복수는 나의 것", "poster": "https://upload.wikimedia.org/wikipedia/en/b/bb/Sfmvposter2.jpg", "w": 264, "h": 376, "wiki": "Sympathy for Mr. Vengeance"},
+  {"title": "The Royal Tenenbaums", "year": 2001, "directors": ["Wes Anderson"], "slug": "the-royal-tenenbaums", "poster": "https://upload.wikimedia.org/wikipedia/en/3/3b/The_Tenenbaums.jpg", "w": 220, "h": 353, "wiki": "The Royal Tenenbaums"},
+  {"title": "Joint Security Area", "year": 2000, "directors": ["Park Chan-wook"], "slug": "joint-security-area", "original": "공동경비구역 JSA", "poster": "https://upload.wikimedia.org/wikipedia/en/7/7f/Jsa.movist.jpg", "w": 265, "h": 375, "wiki": "Joint Security Area (film)"},
+  {"title": "Snatch", "year": 2000, "directors": ["Guy Ritchie"], "slug": "snatch", "poster": "https://upload.wikimedia.org/wikipedia/en/a/a7/Snatch_ver4.jpg", "w": 340, "h": 254, "wiki": "Snatch (film)"},
+  {"title": "O Brother, Where Art Thou?", "year": 2000, "directors": ["Joel Coen"], "slug": "o-brother-where-art-thou", "poster": "https://upload.wikimedia.org/wikipedia/en/5/5b/O_brother_where_art_thou_ver1.jpg", "w": 220, "h": 326, "wiki": "O Brother, Where Art Thou?"},
+  {"title": "Barking Dogs Never Bite", "year": 2000, "directors": ["Bong Joon Ho"], "slug": "barking-dogs-never-bite", "original": "플란다스의 개", "poster": "https://upload.wikimedia.org/wikipedia/en/3/35/Barking_dogs_never_bite5.jpg", "w": 200, "h": 262, "wiki": "Barking Dogs Never Bite"},
+  {"title": "Buena Vista Social Club", "year": 1999, "directors": ["Wim Wenders"], "slug": "buena-vista-social-club", "poster": "https://upload.wikimedia.org/wikipedia/en/f/ff/Bvsccover.jpg", "w": 220, "h": 314, "wiki": "Buena Vista Social Club (film)"},
+  {"title": "The Big Lebowski", "year": 1998, "directors": ["Joel Coen"], "slug": "the-big-lebowski", "poster": "https://upload.wikimedia.org/wikipedia/en/3/35/Biglebowskiposter.jpg", "w": 250, "h": 369, "wiki": "The Big Lebowski"},
+  {"title": "Fargo", "year": 1996, "directors": ["Joel Coen"], "slug": "fargo", "poster": "https://upload.wikimedia.org/wikipedia/en/3/33/Fargo_%281996_movie_poster%29.jpg", "w": 220, "h": 330, "wiki": "Fargo (1996 film)"},
+  {"title": "Raising Arizona", "year": 1987, "directors": ["Joel Coen"], "slug": "raising-arizona", "poster": "https://upload.wikimedia.org/wikipedia/en/3/31/Raising-Arizona-Poster.jpg", "w": 254, "h": 392, "wiki": "Raising Arizona"},
+  {"title": "House", "year": 1977, "directors": ["Nobuhiko Obayashi"], "slug": "house", "original": "ハウス", "poster": "https://upload.wikimedia.org/wikipedia/en/f/f4/House_obayashi.jpg", "w": 220, "h": 315, "wiki": "House (1977 film)"},
+  {"title": "Taxi Driver", "year": 1976, "directors": ["Martin Scorsese"], "slug": "taxi-driver", "poster": "https://upload.wikimedia.org/wikipedia/en/3/33/Taxi_Driver_%281976_film_poster%29.jpg", "w": 257, "h": 388, "wiki": "Taxi Driver"},
+  {"title": "12 Angry Men", "year": 1957, "directors": ["Sidney Lumet"], "slug": "12-angry-men", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/12_Angry_Men_%281957_film_poster%29.jpg/500px-12_Angry_Men_%281957_film_poster%29.jpg", "w": 500, "h": 764, "wiki": "12 Angry Men"},
+  {"title": "Citizen Kane", "year": 1941, "directors": ["Orson Welles"], "slug": "citizen-kane", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg/500px-Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg", "w": 500, "h": 751, "wiki": "Citizen Kane"},
+  {"title": "28 Years Later: Part III", "year": null, "directors": [], "slug": "28-years-later-part-iii"}
+];
+
+// Treat the Coen brothers as one director when grouping (Letterboxd credits Joel alone on their early films).
+const SAME_DIRECTOR = { "Joel Coen": "Joel & Ethan Coen", "Ethan Coen": "Joel & Ethan Coen" };
+
+const root = document.getElementById("films");
+const buttons = document.querySelectorAll(".toggle button");
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const directorsOf = f => [...new Set(f.directors.map(d => SAME_DIRECTOR[d] || d))];
+const bySlug = new Map(FILMS.map(f => [f.slug, f]));
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text != null) node.textContent = text;
+  return node;
+}
+
+function makeCard(f) {
+  const li = el("li", "film");
+  const a = el("a", "card");
+  a.href = "https://letterboxd.com/film/" + f.slug + "/";
+  a.title = f.original ? f.title + " (" + f.original + ")" : f.title;
+  const frame = el("span", "frame");
+  frame.dataset.slug = f.slug;
+  if (f.poster) {
+    const img = new Image();
+    img.alt = "";
+    img.width = f.w;
+    img.height = f.h;
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.src = f.poster;
+    if (f.w / f.h > 0.85) {
+      frame.classList.add("wide");
+      frame.style.setProperty("--bg", 'url("' + f.poster + '")');
+    }
+    frame.append(img);
+  } else {
+    frame.classList.add("empty");
+  }
+  const standIn = el("span", "stand-in", f.title);
+  standIn.setAttribute("aria-hidden", "true");
+  frame.append(standIn);
+  a.append(
+    frame,
+    el("span", "title", f.title),
+    el("span", "meta meta-director", directorsOf(f).join(", ") || "Director TBA"),
+    el("span", "meta meta-year", f.year || "TBA")
+  );
+  li.append(a);
+  return li;
+}
+
+function groupsFor(mode) {
+  const groups = new Map();
+  const add = (name, f) => {
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(f);
+  };
+  for (const f of FILMS) {
+    if (mode === "year") add(String(f.year || "TBA"), f);
+    else {
+      const names = directorsOf(f);
+      if (names.length) names.forEach(name => add(name, f));
+      else add("TBA", f);
+    }
+  }
+  const list = [...groups].map(([name, films]) => ({ name, films }));
+  const tbaLast = (a, b) => (a.name === "TBA") - (b.name === "TBA");
+  if (mode === "year") {
+    list.sort((a, b) => tbaLast(a, b) || Number(b.name) - Number(a.name));
+  } else {
+    // Directors with the most films first, then alphabetical; each director's films newest first.
+    list.sort((a, b) => tbaLast(a, b) || b.films.length - a.films.length || a.name.localeCompare(b.name));
+    list.forEach(g => g.films.sort((a, b) => (b.year || 9999) - (a.year || 9999)));
+  }
+  return list;
+}
+
+const cards = new Map(FILMS.map(f => [f.slug, makeCard(f)]));
+let mode = null;
+
+function render(next, animate) {
+  // Remember where every poster is, regroup, then glide each poster from its old spot to its new one.
+  const before = new Map();
+  if (animate) for (const [slug, li] of cards) if (li.isConnected) before.set(slug, li.getBoundingClientRect());
+
+  const used = new Set();
+  const clusters = document.createDocumentFragment();
+  for (const group of groupsFor(next)) {
+    const section = el("section", "cluster");
+    const h2 = el("h2", null, group.name);
+    if (group.films.length > 1) {
+      const count = el("span", "count", String(group.films.length));
+      count.append(el("span", "sr", " films"));
+      h2.append(" ", count);
+    }
+    const ul = el("ul", "cards");
+    for (const f of group.films) {
+      // A film with two directors appears in both clusters.
+      ul.append(used.has(f.slug) ? cards.get(f.slug).cloneNode(true) : cards.get(f.slug));
+      used.add(f.slug);
+    }
+    section.append(h2, ul);
+    clusters.append(section);
+  }
+  root.replaceChildren(clusters);
+  root.className = "by-" + next;
+  mode = next;
+  buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === next)));
+
+  if (!animate || reduceMotion.matches) return;
+  for (const [slug, li] of cards) {
+    const from = before.get(slug);
+    if (!from) continue;
+    const to = li.getBoundingClientRect();
+    const dx = from.left - to.left;
+    const dy = from.top - to.top;
+    if (dx || dy) {
+      li.animate(
+        [{ transform: "translate(" + dx + "px, " + dy + "px)" }, { transform: "none" }],
+        { duration: 560, easing: "cubic-bezier(.2, .7, .2, 1)" }
+      );
+    }
+  }
+  root.querySelectorAll("h2").forEach(h => h.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: 260, fill: "backwards" }));
+}
+
+// If a poster link stops working (Wikipedia sometimes renames files), ask Wikipedia for the current one.
+document.addEventListener("error", async event => {
+  const img = event.target;
+  if (!(img instanceof HTMLImageElement)) return;
+  const frame = img.closest(".frame");
+  if (!frame) return;
+  const f = bySlug.get(frame.dataset.slug);
+  if (f && f.wiki && !img.dataset.retried) {
+    img.dataset.retried = "1";
+    try {
+      const api = "https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*" +
+        "&prop=pageimages&piprop=thumbnail&pithumbsize=500&pilicense=any&titles=" + encodeURIComponent(f.wiki);
+      const page = (await (await fetch(api)).json()).query.pages[0];
+      if (page.thumbnail && page.thumbnail.source !== img.src) {
+        img.src = page.thumbnail.source;
+        return;
+      }
+    } catch (e) { /* fall through to the stand-in */ }
+  }
+  frame.classList.remove("wide");
+  frame.classList.add("empty");
+  img.remove();
+}, true);
+
+buttons.forEach(b => b.addEventListener("click", () => {
+  if (b.dataset.mode === mode) return;
+  render(b.dataset.mode, true);
+  history.replaceState(null, "", b.dataset.mode === "director" ? "#director" : location.pathname + location.search);
+}));
+
+const directorCount = new Set(FILMS.flatMap(directorsOf)).size;
+document.getElementById("summary").textContent =
+  FILMS.length + " films I've watched and liked, by " + directorCount + " directors";
+document.querySelector(".controls").hidden = false;
+render(location.hash === "#director" ? "director" : "year", false);
+</script>
+</body>
+</html>
