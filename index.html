@@ -9,9 +9,17 @@
 <meta property="og:description" content="Films I've watched and liked, grouped by year or by director.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://debrajghose.com/movies/">
+<script>
+  // Apply a saved Light or Dark choice before the page draws, so it does not flash the other theme.
+  try {
+    const saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  } catch (e) { /* storage blocked: follow the device setting */ }
+</script>
 <style>
   /* Palette and type follow debrajghose.com so this page feels like part of the site. */
   :root {
+    color-scheme: light;
     --paper: #ffffff;
     --ink: #2b2b2b;
     --text: #555555;
@@ -19,11 +27,41 @@
     --hairline: #eeeeee;
     --mint: #4acaa8;
     --frame: #f2f2f2;
+    --ring: rgba(0, 0, 0, .08);
+    --control-line: #e2e2e2;
+    --control-hover: #f5f5f5;
     --per-row: 8; /* posters per full row: the biggest clusters (8 films) fit on one line */
     --gap: 12px;
     --cluster-gap-x: 40px;
     --cluster-gap-y: 36px;
     --label-size: 15px;
+  }
+  /* Dark colours: used when the device is in dark mode, unless the visitor picked Light, or when they picked Dark. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #161616;
+      --ink: #ececec;
+      --text: #c4c4c4;
+      --muted: #9a9a9a;
+      --hairline: #2a2a2a;
+      --frame: #242424;
+      --ring: rgba(255, 255, 255, .08);
+      --control-line: #3a3a3a;
+      --control-hover: #262626;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #161616;
+    --ink: #ececec;
+    --text: #c4c4c4;
+    --muted: #9a9a9a;
+    --hairline: #2a2a2a;
+    --frame: #242424;
+    --ring: rgba(255, 255, 255, .08);
+    --control-line: #3a3a3a;
+    --control-hover: #262626;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -40,19 +78,18 @@
 
   .page { max-width: 1120px; margin: 0 auto; padding: 56px 32px 64px; }
 
-  header { max-width: 640px; margin-bottom: 40px; }
-  .crumb { margin: 0 0 4px; font-size: 14px; }
+  header { margin-bottom: 40px; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   h1 { margin: 0; color: var(--ink); font-size: 28px; line-height: 1.4; font-weight: 600; }
-  .intro { margin: 6px 0 0; }
 
   .controls { display: flex; align-items: center; gap: 12px; margin-top: 24px; font-size: 14px; }
-  .toggle { display: inline-flex; padding: 3px; border: 1px solid #e2e2e2; border-radius: 999px; }
+  .toggle { display: inline-flex; padding: 3px; border: 1px solid var(--control-line); border-radius: 999px; font-size: 14px; }
   .toggle button {
     font: inherit; line-height: 1.6; color: var(--text);
     background: none; border: 0; border-radius: 999px; padding: 4px 16px; cursor: pointer;
   }
   .toggle button[aria-pressed="true"] { background: var(--mint); color: #12352c; font-weight: 600; }
-  .toggle button[aria-pressed="false"]:hover { color: var(--ink); background: #f5f5f5; }
+  .toggle button[aria-pressed="false"]:hover { color: var(--ink); background: var(--control-hover); }
 
   /* Each year or director is a small cluster; clusters flow and wrap so one-film groups pack together. */
   #films { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--cluster-gap-y) var(--cluster-gap-x); container-type: inline-size; }
@@ -70,7 +107,7 @@
 
   .card { display: block; color: inherit; border: 0; }
   .frame { position: relative; display: block; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 3px; background: var(--frame); }
-  .frame::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08); pointer-events: none; }
+  .frame::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--ring); pointer-events: none; }
   .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   /* Landscape posters are shown whole, over a soft blur of themselves. */
   .frame.wide::before { content: ""; position: absolute; inset: -12%; background: var(--bg) center / cover; filter: blur(12px); opacity: .55; }
@@ -112,9 +149,13 @@
 <body>
 <main class="page">
   <header>
-    <p class="crumb"><a href="/">Debraj Ghose</a></p>
-    <h1>Movies</h1>
-    <p class="intro"><span id="summary">Films I've watched and liked</span>. The full log is on <a href="https://letterboxd.com/daybridgeghost/films/">Letterboxd</a>.</p>
+    <div class="top">
+      <h1>Movies</h1>
+      <div class="toggle" id="theme" role="group" aria-label="Colour theme" hidden>
+        <button type="button" data-theme="light" aria-pressed="true">Light</button>
+        <button type="button" data-theme="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
     <div class="controls" hidden>
       <span id="group-label">Group by</span>
       <div class="toggle" role="group" aria-labelledby="group-label">
@@ -198,7 +239,7 @@ const FILMS = [
 const SAME_DIRECTOR = { "Joel Coen": "Joel & Ethan Coen", "Ethan Coen": "Joel & Ethan Coen" };
 
 const root = document.getElementById("films");
-const buttons = document.querySelectorAll(".toggle button");
+const buttons = document.querySelectorAll("button[data-mode]");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const directorsOf = f => [...new Set(f.directors.map(d => SAME_DIRECTOR[d] || d))];
 const bySlug = new Map(FILMS.map(f => [f.slug, f]));
@@ -351,9 +392,22 @@ buttons.forEach(b => b.addEventListener("click", () => {
   history.replaceState(null, "", b.dataset.mode === "director" ? "#director" : location.pathname + location.search);
 }));
 
-const directorCount = new Set(FILMS.flatMap(directorsOf)).size;
-document.getElementById("summary").textContent =
-  FILMS.length + " films I've watched and liked, by " + directorCount + " directors";
+// Light/Dark toggle. Until the visitor picks one, the page follows the device setting.
+const themeButtons = document.querySelectorAll("button[data-theme]");
+const darkDevice = window.matchMedia("(prefers-color-scheme: dark)");
+function showTheme() {
+  const theme = document.documentElement.dataset.theme || (darkDevice.matches ? "dark" : "light");
+  themeButtons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.theme === theme)));
+}
+themeButtons.forEach(b => b.addEventListener("click", () => {
+  document.documentElement.dataset.theme = b.dataset.theme;
+  try { localStorage.setItem("theme", b.dataset.theme); } catch (e) { /* choice lasts until the page closes */ }
+  showTheme();
+}));
+darkDevice.addEventListener("change", showTheme);
+showTheme();
+
+document.getElementById("theme").hidden = false;
 document.querySelector(".controls").hidden = false;
 render(location.hash === "#director" ? "director" : "year", false);
 </script>
