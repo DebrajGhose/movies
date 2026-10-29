@@ -121,7 +121,6 @@
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
     margin-top: 8px; color: var(--ink); font-size: 13px; line-height: 1.35; font-weight: 500;
   }
-  .card:hover .title { text-decoration: underline; text-decoration-color: var(--mint); text-underline-offset: 2px; }
   .meta { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 1.35; }
   .by-year .meta-year, .by-director .meta-director { display: none; }
 
@@ -166,14 +165,14 @@
   </header>
 
   <div id="films" class="by-year"></div>
-  <noscript><p>Turn on JavaScript to see the films, or browse them on <a href="https://letterboxd.com/daybridgeghost/films/">Letterboxd</a>.</p></noscript>
+  <noscript><p>Turn on JavaScript to see the films.</p></noscript>
 
-  <footer>Posters from <a href="https://en.wikipedia.org/">Wikipedia</a>. Film details from <a href="https://letterboxd.com/daybridgeghost/">Letterboxd</a>.</footer>
+  <footer>Posters from <a href="https://en.wikipedia.org/">Wikipedia</a>.</footer>
 </main>
 
 <script>
-// The film list, newest first. To add a film, copy a line and change it. "slug" is the end of the film's
-// Letterboxd address (letterboxd.com/film/<slug>/). "poster" is the lead image of the film's English
+// The film list, newest first. To add a film, copy a line and change it. "slug" is a short id that no
+// other film uses, such as "the-dark-knight". "poster" is the lead image of the film's English
 // Wikipedia article ("wiki"), and "w" and "h" are its size. "original" is the title for non-English films.
 const FILMS = [
   {"title": "Mickey 17", "year": 2025, "directors": ["Bong Joon Ho"], "slug": "mickey-17", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2d/Mickey_17_film_poster.png", "w": 255, "h": 378, "wiki": "Mickey 17"},
@@ -254,7 +253,7 @@ const FILMS = [
   {"title": "Citizen Kane", "year": 1941, "directors": ["Orson Welles"], "slug": "citizen-kane", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg/500px-Citizen_Kane_poster%2C_1941_%28Style_B%2C_unrestored%29.jpg", "w": 500, "h": 751, "wiki": "Citizen Kane"},
 ];
 
-// Treat the Coen brothers as one director when grouping (Letterboxd credits Joel alone on their early films).
+// Treat the Coen brothers as one director when grouping (their early films credit Joel alone).
 const SAME_DIRECTOR = { "Joel Coen": "Joel & Ethan Coen", "Ethan Coen": "Joel & Ethan Coen" };
 
 const root = document.getElementById("films");
@@ -272,9 +271,8 @@ function el(tag, className, text) {
 
 function makeCard(f) {
   const li = el("li", "film");
-  const a = el("a", "card");
-  a.href = "https://letterboxd.com/film/" + f.slug + "/";
-  a.title = f.original ? f.title + " (" + f.original + ")" : f.title;
+  const card = el("div", "card");
+  card.title = f.original ? f.title + " (" + f.original + ")" : f.title;
   const frame = el("span", "frame");
   frame.dataset.slug = f.slug;
   if (f.poster) {
@@ -296,13 +294,13 @@ function makeCard(f) {
   const standIn = el("span", "stand-in", f.title);
   standIn.setAttribute("aria-hidden", "true");
   frame.append(standIn);
-  a.append(
+  card.append(
     frame,
     el("span", "title", f.title),
     el("span", "meta meta-director", directorsOf(f).join(", ") || "Director TBA"),
     el("span", "meta meta-year", f.year || "TBA")
   );
-  li.append(a);
+  li.append(card);
   return li;
 }
 
