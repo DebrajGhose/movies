@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Movies | Debraj Ghose</title>
-<meta name="description" content="Films and books Debraj Ghose has watched, read and liked, grouped by year or by director and author.">
+<meta name="description" content="Films, books and games Debraj Ghose has watched, read, played and liked, grouped by year or by director, author and developer.">
 <meta property="og:title" content="Movies | Debraj Ghose">
-<meta property="og:description" content="Films and books I've watched, read and liked, grouped by year or by director and author.">
+<meta property="og:description" content="Films, books and games I've watched, read, played and liked, grouped by year or by director, author and developer.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://debrajghose.com/movies/">
 <script>
@@ -160,6 +160,7 @@
       <div class="toggle" role="group" aria-label="Section">
         <button type="button" data-section="movies" aria-pressed="true">Movies</button>
         <button type="button" data-section="books" aria-pressed="false">Books</button>
+        <button type="button" data-section="games" aria-pressed="false">Games</button>
         <button type="button" data-section="all" aria-pressed="false">All</button>
       </div>
       <div class="group">
@@ -173,9 +174,9 @@
   </header>
 
   <div id="films" class="by-person"></div>
-  <noscript><p>Turn on JavaScript to see the films and books.</p></noscript>
+  <noscript><p>Turn on JavaScript to see the films, books and games.</p></noscript>
 
-  <footer>Posters and book covers from <a href="https://en.wikipedia.org/">Wikipedia</a>.</footer>
+  <footer>Posters, covers and game art from <a href="https://en.wikipedia.org/">Wikipedia</a> and <a href="https://openlibrary.org/">Open Library</a>.</footer>
 </main>
 
 <script>
@@ -333,6 +334,24 @@ const BOOKS = [
   {"title": "Over to You", "year": 1946, "authors": ["Roald Dahl"], "slug": "over-to-you", "series": "short stories", "poster": "https://upload.wikimedia.org/wikipedia/en/f/fc/OverToYou.jpg", "w": 288, "h": 359, "wiki": "Over to You: Ten Stories of Flyers and Flying"}
 ];
 
+// The game list works the same way, with "developers" in place of "directors". "year" is the year the game was
+// first released, and "poster" is the cover or box art from the game's English Wikipedia article ("wiki").
+const GAMES = [
+  {"title": "Brawlhalla", "year": 2017, "developers": ["Blue Mammoth Games"], "slug": "brawlhalla", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2d/Brawlhalla_BoxArt.jpg", "w": 276, "h": 361, "wiki": "Brawlhalla"},
+  {"title": "The Witcher 3: Blood and Wine", "year": 2016, "developers": ["CD Projekt Red"], "slug": "the-witcher-3-blood-and-wine", "series": "expansion to The Witcher 3", "poster": "https://upload.wikimedia.org/wikipedia/en/b/bb/Blood_and_wine_art.jpg", "w": 400, "h": 250, "wiki": "The Witcher 3: Wild Hunt – Blood and Wine"},
+  {"title": "Rec Room", "year": 2016, "developers": ["Rec Room Inc."], "slug": "rec-room", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Rec_Room_Logo_Stacked.svg/500px-Rec_Room_Logo_Stacked.svg.png", "w": 500, "h": 355, "wiki": "Rec Room (video game)"},
+  {"title": "The Witcher 3: Hearts of Stone", "year": 2015, "developers": ["CD Projekt Red"], "slug": "the-witcher-3-hearts-of-stone", "series": "expansion to The Witcher 3", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2e/Hearts_of_stone_art.jpg", "w": 320, "h": 320, "wiki": "The Witcher 3: Wild Hunt – Hearts of Stone"},
+  {"title": "The Witcher 3: Wild Hunt", "year": 2015, "developers": ["CD Projekt Red"], "slug": "the-witcher-3-wild-hunt", "poster": "https://upload.wikimedia.org/wikipedia/en/0/0c/Witcher_3_cover_art.jpg", "w": 258, "h": 387, "wiki": "The Witcher 3: Wild Hunt"},
+  {"title": "Hearthstone", "year": 2014, "developers": ["Blizzard Entertainment"], "slug": "hearthstone", "poster": "https://upload.wikimedia.org/wikipedia/en/f/f2/Hearthstone_2016_logo.png", "w": 464, "h": 215, "wiki": "Hearthstone"},
+  {"title": "Warcraft III: The Frozen Throne", "year": 2003, "developers": ["Blizzard Entertainment"], "slug": "warcraft-iii-the-frozen-throne", "series": "expansion to Reign of Chaos", "poster": "https://upload.wikimedia.org/wikipedia/en/8/87/Warcraftiii-frozen-throne-boxcover.jpg", "w": 256, "h": 353, "wiki": "Warcraft III: The Frozen Throne"},
+  {"title": "Rayman 3: Hoodlum Havoc", "year": 2003, "developers": ["Ubisoft"], "slug": "rayman-3-hoodlum-havoc", "poster": "https://upload.wikimedia.org/wikipedia/en/3/34/Rayman_3_Box_Art.png", "w": 266, "h": 374, "wiki": "Rayman 3: Hoodlum Havoc"},
+  {"title": "Warcraft III: Reign of Chaos", "year": 2002, "developers": ["Blizzard Entertainment"], "slug": "warcraft-iii-reign-of-chaos", "poster": "https://upload.wikimedia.org/wikipedia/en/6/66/WarcraftIII.jpg", "w": 256, "h": 364, "wiki": "Warcraft III: Reign of Chaos"},
+  {"title": "Worms World Party", "year": 2001, "developers": ["Team17"], "slug": "worms-world-party", "poster": "https://upload.wikimedia.org/wikipedia/en/2/23/Wwp-win-cover.jpg", "w": 253, "h": 392, "wiki": "Worms World Party"},
+  {"title": "Command & Conquer: Red Alert 2", "year": 2000, "developers": ["Westwood Pacific"], "slug": "command-and-conquer-red-alert-2", "poster": "https://upload.wikimedia.org/wikipedia/en/1/11/Cncra2-win-cover.jpg", "w": 256, "h": 364, "wiki": "Command & Conquer: Red Alert 2"},
+  {"title": "Heretic II", "year": 1998, "developers": ["Raven Software"], "slug": "heretic-ii", "poster": "https://upload.wikimedia.org/wikipedia/en/c/ca/Heretic_II_Coverart.png", "w": 256, "h": 308, "wiki": "Heretic II"},
+  {"title": "Blood", "year": 1997, "developers": ["Monolith Productions"], "slug": "blood-1997", "poster": "https://upload.wikimedia.org/wikipedia/en/4/4d/Blood_logo.jpg", "w": 267, "h": 373, "wiki": "Blood (video game)"}
+];
+
 // Treat the Coen brothers as one director when grouping (their early films credit Joel alone).
 const SAME_DIRECTOR = { "Joel Coen": "Joel & Ethan Coen", "Ethan Coen": "Joel & Ethan Coen" };
 
@@ -341,14 +360,15 @@ const buttons = document.querySelectorAll("button[data-mode]");
 const sectionButtons = document.querySelectorAll("button[data-section]");
 const personButton = document.querySelector("button[data-mode=person]");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-// Directors for a film, authors for a book.
-const peopleOf = f => [...new Set((f.directors || f.authors).map(d => SAME_DIRECTOR[d] || d))];
+// Directors for a film, authors for a book, developers for a game.
+const peopleOf = f => [...new Set((f.directors || f.authors || f.developers).map(d => SAME_DIRECTOR[d] || d))];
 const SECTIONS = {
   movies: { items: FILMS, heading: "Movies", person: "Director", noun: "films" },
   books: { items: BOOKS, heading: "Books", person: "Author", noun: "books" },
-  all: { items: [...FILMS, ...BOOKS], heading: "Movies and books", person: "Creator", noun: "titles" }
+  games: { items: GAMES, heading: "Games", person: "Developer", noun: "games" },
+  all: { items: [...FILMS, ...BOOKS, ...GAMES], heading: "Movies, books and games", person: "Creator", noun: "titles" }
 };
-const bySlug = new Map([...FILMS, ...BOOKS].map(f => [f.slug, f]));
+const bySlug = new Map([...FILMS, ...BOOKS, ...GAMES].map(f => [f.slug, f]));
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -418,7 +438,7 @@ function groupsFor(mode, items) {
   return list;
 }
 
-const cards = new Map([...FILMS, ...BOOKS].map(f => [f.slug, makeCard(f)]));
+const cards = new Map([...FILMS, ...BOOKS, ...GAMES].map(f => [f.slug, makeCard(f)]));
 let section = null;
 let mode = null;
 
@@ -499,8 +519,8 @@ document.addEventListener("error", async event => {
 }, true);
 
 // The address remembers the view. Grouping by director, author or creator is the default: no address for movies,
-// #books and #all for the others, and #year, #books-year and #all-year for grouping by year.
-const HASHES = { movies: ["#year", ""], books: ["#books-year", "#books"], all: ["#all-year", "#all"] };
+// #books, #games and #all for the others, and #year, #books-year, #games-year and #all-year for grouping by year.
+const HASHES = { movies: ["#year", ""], books: ["#books-year", "#books"], games: ["#games-year", "#games"], all: ["#all-year", "#all"] };
 function show(nextSection, nextMode, animate) {
   render(nextSection, nextMode, animate);
   const hash = HASHES[nextSection][nextMode === "person" ? 1 : 0];
@@ -530,7 +550,7 @@ showTheme();
 
 document.getElementById("theme").hidden = false;
 document.querySelector(".controls").hidden = false;
-render(location.hash.startsWith("#books") ? "books" : location.hash.startsWith("#all") ? "all" : "movies", /year/.test(location.hash) ? "year" : "person", false);
+render(location.hash.startsWith("#books") ? "books" : location.hash.startsWith("#games") ? "games" : location.hash.startsWith("#all") ? "all" : "movies", /year/.test(location.hash) ? "year" : "person", false);
 </script>
 </body>
 </html>
