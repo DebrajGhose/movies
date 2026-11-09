@@ -165,14 +165,14 @@
       <div class="group">
         <span id="group-label">Group by</span>
         <div class="toggle" role="group" aria-labelledby="group-label">
-          <button type="button" data-mode="year" aria-pressed="true">Year</button>
-          <button type="button" data-mode="person" aria-pressed="false">Director</button>
+          <button type="button" data-mode="year" aria-pressed="false">Year</button>
+          <button type="button" data-mode="person" aria-pressed="true">Director</button>
         </div>
       </div>
     </div>
   </header>
 
-  <div id="films" class="by-year"></div>
+  <div id="films" class="by-person"></div>
   <noscript><p>Turn on JavaScript to see the films and books.</p></noscript>
 
   <footer>Posters and book covers from <a href="https://en.wikipedia.org/">Wikipedia</a>.</footer>
@@ -282,8 +282,8 @@ const FILMS = [
 ];
 
 // The book list works the same way: newest first, with "authors" in place of "directors". "year" is the year the
-// book was first published, "poster" is the cover from the book's English Wikipedia article ("wiki"), and the optional
-// "series" is shown when you hover over a cover.
+// book was first published, "poster" is the cover image (from the book's English Wikipedia article, "wiki", or from Open Library when
+// there is none), and the optional "series" is shown when you hover over a cover.
 const BOOKS = [
   {"title": "Project Hail Mary", "year": 2021, "authors": ["Andy Weir"], "slug": "project-hail-mary", "poster": "https://upload.wikimedia.org/wikipedia/en/a/ad/Project_Hail_Mary%2C_First_Edition_Cover_%282021%29.jpg", "w": 257, "h": 388, "wiki": "Project Hail Mary"},
   {"title": "A Dance with Dragons", "year": 2011, "authors": ["George R. R. Martin"], "slug": "a-dance-with-dragons", "series": "A Song of Ice and Fire, book 5", "poster": "https://upload.wikimedia.org/wikipedia/en/5/5d/A_Dance_With_Dragons_US.jpg", "w": 262, "h": 388, "wiki": "A Dance with Dragons"},
@@ -311,6 +311,7 @@ const BOOKS = [
   {"title": "Norwegian Wood", "year": 1987, "authors": ["Haruki Murakami"], "slug": "norwegian-wood", "poster": "https://upload.wikimedia.org/wikipedia/en/e/e0/Norwegian_Wood_%28novel%29_%28Book_Cover%29.jpeg", "w": 254, "h": 392, "wiki": "Norwegian Wood (novel)"},
   {"title": "The Drawing of the Three", "year": 1987, "authors": ["Stephen King"], "slug": "the-drawing-of-the-three", "series": "The Dark Tower, book 2", "poster": "https://upload.wikimedia.org/wikipedia/en/3/3a/The_Drawing_of_the_Three.jpg", "w": 264, "h": 377, "wiki": "The Dark Tower II: The Drawing of the Three"},
   {"title": "Foundation and Earth", "year": 1986, "authors": ["Isaac Asimov"], "slug": "foundation-and-earth", "series": "Foundation series", "poster": "https://upload.wikimedia.org/wikipedia/en/e/eb/Foundation_and_Earth_%28book_cover%29.jpg", "w": 258, "h": 392, "wiki": "Foundation and Earth"},
+  {"title": "Random Walks in Biology", "year": 1983, "authors": ["Howard C. Berg"], "slug": "random-walks-in-biology", "poster": "https://covers.openlibrary.org/b/id/439275-L.jpg", "w": 320, "h": 500},
   {"title": "Foundation's Edge", "year": 1982, "authors": ["Isaac Asimov"], "slug": "foundations-edge", "series": "Foundation series", "poster": "https://upload.wikimedia.org/wikipedia/en/c/cb/IsaacAsimov_Foundation%27sEdge.jpg", "w": 258, "h": 392, "wiki": "Foundation's Edge"},
   {"title": "The Gunslinger", "year": 1982, "authors": ["Stephen King"], "slug": "the-gunslinger", "series": "The Dark Tower, book 1", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/The_Dark_Tower_%E2%80%93_The_Gunslinger_%281982%29_front_cover%2C_first_edition.jpg/500px-The_Dark_Tower_%E2%80%93_The_Gunslinger_%281982%29_front_cover%2C_first_edition.jpg", "w": 500, "h": 730, "wiki": "The Dark Tower: The Gunslinger"},
   {"title": "The Affirmation", "year": 1981, "authors": ["Christopher Priest"], "slug": "the-affirmation", "poster": "https://upload.wikimedia.org/wikipedia/en/7/7f/TheAffirmation.jpg", "w": 236, "h": 365, "wiki": "The Affirmation"},
@@ -493,8 +494,9 @@ document.addEventListener("error", async event => {
   img.remove();
 }, true);
 
-// The address remembers the view: #director, #books, #books-author, #all or #all-creator.
-const HASHES = { movies: ["", "#director"], books: ["#books", "#books-author"], all: ["#all", "#all-creator"] };
+// The address remembers the view. Grouping by director, author or creator is the default: no address for movies,
+// #books and #all for the others, and #year, #books-year and #all-year for grouping by year.
+const HASHES = { movies: ["#year", ""], books: ["#books-year", "#books"], all: ["#all-year", "#all"] };
 function show(nextSection, nextMode, animate) {
   render(nextSection, nextMode, animate);
   const hash = HASHES[nextSection][nextMode === "person" ? 1 : 0];
@@ -524,7 +526,7 @@ showTheme();
 
 document.getElementById("theme").hidden = false;
 document.querySelector(".controls").hidden = false;
-render(location.hash.startsWith("#books") ? "books" : location.hash.startsWith("#all") ? "all" : "movies", /director|author|creator/.test(location.hash) ? "person" : "year", false);
+render(location.hash.startsWith("#books") ? "books" : location.hash.startsWith("#all") ? "all" : "movies", /year/.test(location.hash) ? "year" : "person", false);
 </script>
 </body>
 </html>
