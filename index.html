@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Movies | Debraj Ghose</title>
-<meta name="description" content="Films, books and games Debraj Ghose has watched, read, played and liked, grouped by year or by director, author and developer.">
+<meta name="description" content="Films, books, games and music Debraj Ghose has watched, read, played, listened to and liked, grouped by year or by director, author and developer.">
 <meta property="og:title" content="Movies | Debraj Ghose">
-<meta property="og:description" content="Films, books and games I've watched, read, played and liked, grouped by year or by director, author and developer.">
+<meta property="og:description" content="Films, books, games and music I've watched, read, played, listened to and liked, grouped by year or by director, author and developer.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://debrajghose.com/movies/">
 <script>
@@ -113,6 +113,7 @@
   /* Landscape posters are shown whole, over a soft blur of themselves. */
   .frame.wide::before { content: ""; position: absolute; inset: -12%; background: var(--bg) center / cover; filter: blur(12px); opacity: .55; }
   .frame.wide img { object-fit: contain; }
+  .frame.photo img { object-position: 50% 35%; }
   .stand-in { display: none; }
   .frame.empty .stand-in {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -143,6 +144,7 @@
     .page { padding: 32px 16px 48px; }
     header { margin-bottom: 32px; }
     .count { font-size: 12px; }
+    .controls .toggle button { padding: 4px 10px; } /* keeps the five-way section switch inside a narrow phone */
   }
 </style>
 </head>
@@ -161,6 +163,7 @@
         <button type="button" data-section="movies" aria-pressed="true">Movies</button>
         <button type="button" data-section="books" aria-pressed="false">Books</button>
         <button type="button" data-section="games" aria-pressed="false">Games</button>
+        <button type="button" data-section="music" aria-pressed="false">Music</button>
         <button type="button" data-section="all" aria-pressed="false">All</button>
       </div>
       <div class="group">
@@ -174,9 +177,9 @@
   </header>
 
   <div id="films" class="by-person"></div>
-  <noscript><p>Turn on JavaScript to see the films, books and games.</p></noscript>
+  <noscript><p>Turn on JavaScript to see the films, books, games and music.</p></noscript>
 
-  <footer>Posters, covers and game art from <a href="https://en.wikipedia.org/">Wikipedia</a> and <a href="https://openlibrary.org/">Open Library</a>.</footer>
+  <footer>Posters, covers, game art and artist photos from <a href="https://en.wikipedia.org/">Wikipedia</a>, <a href="https://commons.wikimedia.org/">Wikimedia Commons</a> and <a href="https://openlibrary.org/">Open Library</a>. Artist photos are by their photographers under Creative Commons licences.</footer>
 </main>
 
 <script>
@@ -337,7 +340,9 @@ const BOOKS = [
 // The game list works the same way, with "developers" in place of "directors". "year" is the year the game was
 // first released, and "poster" is the cover or box art from the game's English Wikipedia article ("wiki").
 const GAMES = [
+  {"title": "Control", "year": 2019, "developers": ["Remedy Entertainment"], "slug": "control", "poster": "https://upload.wikimedia.org/wikipedia/en/e/e5/Control_game_cover_art.jpg", "w": 273, "h": 365, "wiki": "Control (video game)"},
   {"title": "Among Us", "year": 2018, "developers": ["Innersloth"], "slug": "among-us", "poster": "https://upload.wikimedia.org/wikipedia/en/9/9a/Among_Us_cover_art.jpg", "w": 258, "h": 387, "wiki": "Among Us"},
+  {"title": "Life Is Strange 2", "year": 2018, "developers": ["Dontnod Entertainment"], "slug": "life-is-strange-2", "poster": "https://upload.wikimedia.org/wikipedia/en/f/fa/Life_Is_Strange_2_cover.jpg", "w": 273, "h": 365, "wiki": "Life Is Strange 2"},
   {"title": "Brawlhalla", "year": 2017, "developers": ["Blue Mammoth Games"], "slug": "brawlhalla", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2d/Brawlhalla_BoxArt.jpg", "w": 276, "h": 361, "wiki": "Brawlhalla"},
   {"title": "What Remains of Edith Finch", "year": 2017, "developers": ["Giant Sparrow"], "slug": "what-remains-of-edith-finch", "poster": "https://upload.wikimedia.org/wikipedia/en/7/79/What_Remains_of_Edith_Finch_cover_art.jpg", "w": 316, "h": 316, "wiki": "What Remains of Edith Finch"},
   {"title": "The Witcher 3: Blood and Wine", "year": 2016, "developers": ["CD Projekt Red"], "slug": "the-witcher-3-blood-and-wine", "series": "expansion to The Witcher 3", "poster": "https://upload.wikimedia.org/wikipedia/en/b/bb/Blood_and_wine_art.jpg", "w": 400, "h": 250, "wiki": "The Witcher 3: Wild Hunt – Blood and Wine"},
@@ -345,7 +350,9 @@ const GAMES = [
   {"title": "Firewatch", "year": 2016, "developers": ["Campo Santo"], "slug": "firewatch", "poster": "https://upload.wikimedia.org/wikipedia/en/a/a5/Firewatch_cover.jpg", "w": 250, "h": 290, "wiki": "Firewatch"},
   {"title": "The Witcher 3: Hearts of Stone", "year": 2015, "developers": ["CD Projekt Red"], "slug": "the-witcher-3-hearts-of-stone", "series": "expansion to The Witcher 3", "poster": "https://upload.wikimedia.org/wikipedia/en/2/2e/Hearts_of_stone_art.jpg", "w": 320, "h": 320, "wiki": "The Witcher 3: Wild Hunt – Hearts of Stone"},
   {"title": "The Witcher 3: Wild Hunt", "year": 2015, "developers": ["CD Projekt Red"], "slug": "the-witcher-3-wild-hunt", "poster": "https://upload.wikimedia.org/wikipedia/en/0/0c/Witcher_3_cover_art.jpg", "w": 258, "h": 387, "wiki": "The Witcher 3: Wild Hunt"},
+  {"title": "Life Is Strange", "year": 2015, "developers": ["Dontnod Entertainment"], "slug": "life-is-strange", "poster": "https://upload.wikimedia.org/wikipedia/en/0/0d/Life_Is_Strange_cover_art.png", "w": 250, "h": 375, "wiki": "Life Is Strange (video game)"},
   {"title": "Hearthstone", "year": 2014, "developers": ["Blizzard Entertainment"], "slug": "hearthstone", "poster": "https://upload.wikimedia.org/wikipedia/en/f/f2/Hearthstone_2016_logo.png", "w": 464, "h": 215, "wiki": "Hearthstone"},
+  {"title": "TowerFall Ascension", "year": 2014, "developers": ["Maddy Makes Games"], "slug": "towerfall-ascension", "poster": "https://upload.wikimedia.org/wikipedia/en/e/e5/TowerFall_logo.png", "w": 250, "h": 102, "wiki": "TowerFall"},
   {"title": "To the Moon", "year": 2011, "developers": ["Freebird Games"], "slug": "to-the-moon", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c2/To_the_Moon_cover.png", "w": 219, "h": 456, "wiki": "To the Moon (video game)"},
   {"title": "Monster Hunter Freedom Unite", "year": 2008, "developers": ["Capcom Production Studio 1"], "slug": "monster-hunter-freedom-unite", "series": "PSP", "poster": "https://upload.wikimedia.org/wikipedia/en/0/01/MonsterHunterFreedomUnite.jpg", "w": 240, "h": 414, "wiki": "Monster Hunter Freedom Unite"},
   {"title": "Arcanists", "year": 2008, "developers": ["Jagex"], "slug": "arcanists", "poster": "https://static.wikia.nocookie.net/jagex/images/e/ed/Arcanists_logo.png/revision/latest?cb=20100909184019", "w": 372, "h": 164},
@@ -359,9 +366,28 @@ const GAMES = [
   {"title": "Star Wars Jedi Knight II: Jedi Outcast", "year": 2002, "developers": ["Raven Software"], "slug": "jedi-knight-ii-jedi-outcast", "poster": "https://upload.wikimedia.org/wikipedia/en/4/40/Jedi_Outcast_pc_cover.jpg", "w": 256, "h": 363, "wiki": "Star Wars Jedi Knight II: Jedi Outcast"},
   {"title": "Worms World Party", "year": 2001, "developers": ["Team17"], "slug": "worms-world-party", "poster": "https://upload.wikimedia.org/wikipedia/en/2/23/Wwp-win-cover.jpg", "w": 253, "h": 392, "wiki": "Worms World Party"},
   {"title": "Command & Conquer: Red Alert 2", "year": 2000, "developers": ["Westwood Pacific"], "slug": "command-and-conquer-red-alert-2", "poster": "https://upload.wikimedia.org/wikipedia/en/1/11/Cncra2-win-cover.jpg", "w": 256, "h": 364, "wiki": "Command & Conquer: Red Alert 2"},
+  {"title": "Rayman 2: The Great Escape", "year": 1999, "developers": ["Ubi Pictures"], "slug": "rayman-2-the-great-escape", "poster": "https://upload.wikimedia.org/wikipedia/en/6/61/Rayman_2.jpg", "w": 280, "h": 357, "wiki": "Rayman 2: The Great Escape"},
   {"title": "Heretic II", "year": 1998, "developers": ["Raven Software"], "slug": "heretic-ii", "poster": "https://upload.wikimedia.org/wikipedia/en/c/ca/Heretic_II_Coverart.png", "w": 256, "h": 308, "wiki": "Heretic II"},
   {"title": "Blood", "year": 1997, "developers": ["Monolith Productions"], "slug": "blood-1997", "poster": "https://upload.wikimedia.org/wikipedia/en/4/4d/Blood_logo.jpg", "w": 267, "h": 373, "wiki": "Blood (video game)"},
   {"title": "Mortal Kombat 4", "year": 1997, "developers": ["Midway"], "slug": "mortal-kombat-4", "poster": "https://upload.wikimedia.org/wikipedia/en/c/c2/Mortal_Kombat_4_cover.jpg", "w": 288, "h": 300, "wiki": "Mortal Kombat 4"},
+];
+
+// Music is just a list of artists and bands: a "title" (the name), a "slug", and a picture from the artist's English
+// Wikipedia article ("wiki"). There is no year or creator, so the Music tab is one alphabetical list.
+const MUSIC = [
+  {"title": "Carpenter Brut", "slug": "carpenter-brut", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/2023_Rock_im_Park_-_Carpenter_Brut_-_by_2eight_-_7DS4599.jpg/500px-2023_Rock_im_Park_-_Carpenter_Brut_-_by_2eight_-_7DS4599.jpg", "w": 500, "h": 333, "wiki": "Carpenter Brut"},
+  {"title": "CHON", "slug": "chon", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Chon23.jpg/500px-Chon23.jpg", "w": 500, "h": 333, "wiki": "Chon (band)"},
+  {"title": "David Bowie", "slug": "david-bowie", "poster": "https://upload.wikimedia.org/wikipedia/commons/e/e8/David-Bowie_Chicago_2002-08-08_photoby_Adam-Bielawski-cropped.jpg", "w": 342, "h": 400, "wiki": "David Bowie"},
+  {"title": "David Maxim Micic", "slug": "david-maxim-micic", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/DavidMaximMicic132_3000x_RG.jpg/500px-DavidMaximMicic132_3000x_RG.jpg", "w": 500, "h": 333},
+  {"title": "Opeth", "slug": "opeth", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Opeth_%40_Rock_Hard_Festival_2017_201.jpg/500px-Opeth_%40_Rock_Hard_Festival_2017_201.jpg", "w": 500, "h": 333, "wiki": "Opeth"},
+  {"title": "Peter Cat Recording Co.", "slug": "peter-cat-recording-co", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Peter_Cat_Recording_Co_ICW_Mumbai.jpg/500px-Peter_Cat_Recording_Co_ICW_Mumbai.jpg", "w": 500, "h": 281, "wiki": "Peter Cat Recording Co."},
+  {"title": "Plini", "slug": "plini", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Plini248_300x_RG_%28cropped%29.jpg/500px-Plini248_300x_RG_%28cropped%29.jpg", "w": 500, "h": 667, "wiki": "Plini"},
+  {"title": "Poets of the Fall", "slug": "poets-of-the-fall", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/POTF_2017.jpg/500px-POTF_2017.jpg", "w": 500, "h": 289, "wiki": "Poets of the Fall"},
+  {"title": "Porcupine Tree", "slug": "porcupine-tree", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Porcupine_Tree_-_Live_at_Auditorium_Parco_della_Musica%2C_Rome_%28June_24%2C_2023%29_-_9012_%28cropped%29.jpg/500px-Porcupine_Tree_-_Live_at_Auditorium_Parco_della_Musica%2C_Rome_%28June_24%2C_2023%29_-_9012_%28cropped%29.jpg", "w": 500, "h": 281, "wiki": "Porcupine Tree"},
+  {"title": "Rise Against", "slug": "rise-against", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Rise_Against_-_2023153205444_2023-06-02_Rock_am_Ring_-_Sven_-_1D_X_MK_II_-_3381_-_AK8I5374.jpg/500px-Rise_Against_-_2023153205444_2023-06-02_Rock_am_Ring_-_Sven_-_1D_X_MK_II_-_3381_-_AK8I5374.jpg", "w": 500, "h": 333, "wiki": "Rise Against"},
+  {"title": "Sithu Aye", "slug": "sithu-aye", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Sithu_Aye_%40_Euroblast_2016_56.jpg/500px-Sithu_Aye_%40_Euroblast_2016_56.jpg", "w": 500, "h": 333, "wiki": "Sithu Aye"},
+  {"title": "Snarky Puppy", "slug": "snarky-puppy", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Snarky_Puppy%4051._Heineken_Jazzaldia_%2830052040612%29.jpg/500px-Snarky_Puppy%4051._Heineken_Jazzaldia_%2830052040612%29.jpg", "w": 500, "h": 241, "wiki": "Snarky Puppy"},
+  {"title": "Steven Wilson", "slug": "steven-wilson", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/HF2023PorcupineTree_3_%28cropped%29.jpg/500px-HF2023PorcupineTree_3_%28cropped%29.jpg", "w": 500, "h": 667, "wiki": "Steven Wilson"},
 ];
 
 // Treat the Coen brothers as one director when grouping (their early films credit Joel alone).
@@ -371,16 +397,18 @@ const root = document.getElementById("films");
 const buttons = document.querySelectorAll("button[data-mode]");
 const sectionButtons = document.querySelectorAll("button[data-section]");
 const personButton = document.querySelector("button[data-mode=person]");
+const groupControl = document.querySelector(".group");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 // Directors for a film, authors for a book, developers for a game.
-const peopleOf = f => [...new Set((f.directors || f.authors || f.developers).map(d => SAME_DIRECTOR[d] || d))];
+const peopleOf = f => [...new Set((f.directors || f.authors || f.developers || []).map(d => SAME_DIRECTOR[d] || d))];
 const SECTIONS = {
   movies: { items: FILMS, heading: "Movies", person: "Director", noun: "films" },
   books: { items: BOOKS, heading: "Books", person: "Author", noun: "books" },
   games: { items: GAMES, heading: "Games", person: "Developer", noun: "games" },
+  music: { items: MUSIC, heading: "Music", noun: "artists", ungrouped: true },
   all: { items: [...FILMS, ...BOOKS, ...GAMES], heading: "Movies, books and games", person: "Creator", noun: "titles" }
 };
-const bySlug = new Map([...FILMS, ...BOOKS, ...GAMES].map(f => [f.slug, f]));
+const bySlug = new Map([...FILMS, ...BOOKS, ...GAMES, ...MUSIC].map(f => [f.slug, f]));
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -403,7 +431,10 @@ function makeCard(f) {
     img.loading = "lazy";
     img.decoding = "async";
     img.src = f.poster;
-    if (f.w / f.h > 0.85) {
+    // Posters and logos wider than tall are shown whole; artist photos are cropped to fill the card.
+    const isArtist = !(f.directors || f.authors || f.developers);
+    if (isArtist) frame.classList.add("photo");
+    else if (f.w / f.h > 0.85) {
       frame.classList.add("wide");
       frame.style.setProperty("--bg", 'url("' + f.poster + '")');
     }
@@ -414,17 +445,23 @@ function makeCard(f) {
   const standIn = el("span", "stand-in", f.title);
   standIn.setAttribute("aria-hidden", "true");
   frame.append(standIn);
-  card.append(
-    frame,
-    el("span", "title", f.title),
-    el("span", "meta meta-person", peopleOf(f).join(", ") || "Director TBA"),
-    el("span", "meta meta-year", f.year || "TBA")
-  );
+  card.append(frame, el("span", "title", f.title));
+  // An artist has no year or creator to show.
+  if (f.directors || f.authors || f.developers) {
+    card.append(
+      el("span", "meta meta-person", peopleOf(f).join(", ") || "Director TBA"),
+      el("span", "meta meta-year", f.year || "TBA")
+    );
+  }
   li.append(card);
   return li;
 }
 
-function groupsFor(mode, items) {
+function groupsFor(mode, items, ungrouped) {
+  if (ungrouped) {
+    const sorted = [...items].sort((a, b) => a.title.replace(/^the /i, "").localeCompare(b.title.replace(/^the /i, ""), undefined, { sensitivity: "base" }));
+    return [{ name: "Artists", films: sorted }];
+  }
   const groups = new Map();
   const add = (name, f) => {
     if (!groups.has(name)) groups.set(name, []);
@@ -450,7 +487,7 @@ function groupsFor(mode, items) {
   return list;
 }
 
-const cards = new Map([...FILMS, ...BOOKS, ...GAMES].map(f => [f.slug, makeCard(f)]));
+const cards = new Map([...FILMS, ...BOOKS, ...GAMES, ...MUSIC].map(f => [f.slug, makeCard(f)]));
 let section = null;
 let mode = null;
 
@@ -462,7 +499,7 @@ function render(nextSection, next, animate) {
 
   const used = new Set();
   const clusters = document.createDocumentFragment();
-  for (const group of groupsFor(next, sec.items)) {
+  for (const group of groupsFor(next, sec.items, sec.ungrouped)) {
     const section = el("section", "cluster");
     const h2 = el("h2", null, group.name);
     if (group.films.length > 1) {
@@ -485,7 +522,8 @@ function render(nextSection, next, animate) {
   mode = next;
   buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === next)));
   sectionButtons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.section === nextSection)));
-  personButton.textContent = sec.person;
+  if (sec.person) personButton.textContent = sec.person;
+  groupControl.hidden = !!sec.ungrouped;
   document.getElementById("heading").textContent = sec.heading;
   document.title = sec.heading + " | Debraj Ghose";
 
@@ -531,8 +569,8 @@ document.addEventListener("error", async event => {
 }, true);
 
 // The address remembers the view. Grouping by director, author or creator is the default: no address for movies,
-// #books, #games and #all for the others, and #year, #books-year, #games-year and #all-year for grouping by year.
-const HASHES = { movies: ["#year", ""], books: ["#books-year", "#books"], games: ["#games-year", "#games"], all: ["#all-year", "#all"] };
+// #books, #games, #music and #all for the others, and #year, #books-year, #games-year and #all-year for grouping by year.
+const HASHES = { movies: ["#year", ""], books: ["#books-year", "#books"], games: ["#games-year", "#games"], music: ["#music", "#music"], all: ["#all-year", "#all"] };
 function show(nextSection, nextMode, animate) {
   render(nextSection, nextMode, animate);
   const hash = HASHES[nextSection][nextMode === "person" ? 1 : 0];
@@ -562,7 +600,7 @@ showTheme();
 
 document.getElementById("theme").hidden = false;
 document.querySelector(".controls").hidden = false;
-render(location.hash.startsWith("#books") ? "books" : location.hash.startsWith("#games") ? "games" : location.hash.startsWith("#all") ? "all" : "movies", /year/.test(location.hash) ? "year" : "person", false);
+render(location.hash.startsWith("#books") ? "books" : location.hash.startsWith("#games") ? "games" : location.hash.startsWith("#music") ? "music" : location.hash.startsWith("#all") ? "all" : "movies", /year/.test(location.hash) ? "year" : "person", false);
 </script>
 </body>
 </html>
