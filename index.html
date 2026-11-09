@@ -390,6 +390,13 @@ const MUSIC = [
   {"title": "Sithu Aye", "slug": "sithu-aye", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Sithu_Aye_%40_Euroblast_2016_56.jpg/500px-Sithu_Aye_%40_Euroblast_2016_56.jpg", "w": 500, "h": 333, "wiki": "Sithu Aye"},
   {"title": "Snarky Puppy", "slug": "snarky-puppy", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Snarky_Puppy%4051._Heineken_Jazzaldia_%2830052040612%29.jpg/500px-Snarky_Puppy%4051._Heineken_Jazzaldia_%2830052040612%29.jpg", "w": 500, "h": 241, "wiki": "Snarky Puppy"},
   {"title": "Steven Wilson", "slug": "steven-wilson", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/HF2023PorcupineTree_3_%28cropped%29.jpg/500px-HF2023PorcupineTree_3_%28cropped%29.jpg", "w": 500, "h": 667, "wiki": "Steven Wilson"},
+  {"title": "Tigran Hamasyan", "slug": "tigran-hamasyan", "poster": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Tigran-Hamasyan-Portrait.jpg", "w": 467, "h": 700, "wiki": "Tigran Hamasyan"},
+  {"title": "Knower", "slug": "knower", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Knower.jpg/500px-Knower.jpg", "w": 500, "h": 500, "wiki": "Knower"},
+  {"title": "Hiromi Uehara", "slug": "hiromi-uehara", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Hiromi_Uehara_-_Jazz_na_Starowce_-_2.jpg/500px-Hiromi_Uehara_-_Jazz_na_Starowce_-_2.jpg", "w": 500, "h": 302, "wiki": "Hiromi Uehara"},
+  {"title": "Elephant Gym", "slug": "elephant-gym", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Elephant_Gym_at_Esplanade_Annexe_Studio_%282023-02-04_16-19-43%29.jpg/500px-Elephant_Gym_at_Esplanade_Annexe_Studio_%282023-02-04_16-19-43%29.jpg", "w": 500, "h": 375, "wiki": "Elephant Gym"},
+  {"title": "Monoral", "slug": "monoral", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Monoral3.jpg/500px-Monoral3.jpg", "w": 500, "h": 333, "wiki": "Monoral"},
+  {"title": "Tycho", "slug": "tycho", "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Tycho_2012.jpg/500px-Tycho_2012.jpg", "w": 500, "h": 716, "wiki": "Tycho (musician)"},
+  {"title": "Frederic", "slug": "frederic", "poster": "https://upload.wikimedia.org/wikipedia/en/3/3b/Oddloop_%28Frederic_EP_-_cover_art%29.jpg", "w": 300, "h": 300, "wiki": "Frederic (band)"},
 ];
 
 // Treat the Coen brothers as one director when grouping (their early films credit Joel alone).
@@ -433,9 +440,9 @@ function makeCard(f) {
     img.loading = "lazy";
     img.decoding = "async";
     img.src = f.poster;
-    // Posters and logos wider than tall are shown whole; artist photos are cropped to fill the card.
+    // Posters, logos and square pictures are shown whole; wide artist photos are cropped to fill the card.
     const isArtist = !(f.directors || f.authors || f.developers);
-    if (isArtist) frame.classList.add("photo");
+    if (isArtist && f.w / f.h > 1.2) frame.classList.add("photo");
     else if (f.w / f.h > 0.85) {
       frame.classList.add("wide");
       frame.style.setProperty("--bg", 'url("' + f.poster + '")');
